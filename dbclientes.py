@@ -43,10 +43,10 @@ class dbclientes:
         if row is not None:
             aux = cli
             aux.setID(int(row[0]))
-            aux.setUsuarioID(int(row[1]))
-            aux.setNombre(row[2])
-            aux.setRfc(row[3])
-            aux.setDireccion(row[4])
+            aux.setUsuarioID(int(row[4]))
+            aux.setNombre(row[1])
+            aux.setRfc(row[2])
+            aux.setDireccion(row[3])
         return aux
     
     def editarCliente(self, cli: cli.Cliente):
@@ -54,7 +54,7 @@ class dbclientes:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "UPDATE clientes SET nombre = %s, rfc = %s, telefono = %s WHERE cliente_id = %s"
+            self.sql = "UPDATE clientes SET nombre = %s, rfc = %s, direccion = %s WHERE cliente_id = %s"
             valores = (cli.getNombre(), cli.getRfc(), cli.getDireccion(), cli.getID())
             self.cursor1.execute(self.sql, valores)
             self.conn.commit()

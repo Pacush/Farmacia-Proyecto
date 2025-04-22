@@ -15,7 +15,7 @@ class dbusuarios:
             self.conn.commit()
             self.conn.close()
             if row[0] is not None:
-                if usuario.getPassword()==row[3]:
+                if usuario.getPassword()==row[4]:
                     aux=usr.Usuario()
                     aux.setID(int(row[0]))
                     aux.setNombre(row[1])

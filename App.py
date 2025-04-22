@@ -12,7 +12,7 @@ import reparacion as rep
 import usuario as usr
 import vehiculo as veh
 
-perfiles = ["Administrador", "Auxiliar", "Mecanico"]
+perfiles = ["Administrador", "Gerente", "Cajero"]
 
 class Login(tk.Tk):
     def __init__(self):
@@ -20,8 +20,8 @@ class Login(tk.Tk):
         self.config(width=300, height=500, bg="black")
         self.title("Login")
 
-        self.label_titulo = tk.Label(self, text="Taller Mecánico", font=("Arial", 16, "bold"), bg="black", fg="white")
-        self.label_titulo.place(x=80, y=10)
+        self.label_titulo = tk.Label(self, text="Farmacia", font=("Arial", 16, "bold"), bg="black", fg="white")
+        self.label_titulo.place(x=100, y=10)
 
         self.label_username = tk.Label(self, text="Username: ", font=("Arial", 10, "bold"), bg="black", fg="white")
         self.label_username.place(x=10, y=60)
@@ -63,8 +63,8 @@ class App(tk.Tk):
         self.config(width=500, height=500)
         self.title("Menú principal")
 
-        self.label_titulo = tk.Label(self, text="Taller Mecánico", font=("Arial", 16, "bold"), bg="black", fg="white")
-        self.label_titulo.place(x=160, y=20)
+        self.label_titulo = tk.Label(self, text="Farmacia", font=("Arial", 16, "bold"), bg="black", fg="white")
+        self.label_titulo.place(x=180, y=20)
         
         #self.btn_usuarios = tk.Button(self, text="Usuarios", font=("Arial", 10, "bold"), command=lambda: ventanaTablaUsuarios())
         #self.btn_usuarios.place(x=210, y=80)
@@ -346,10 +346,10 @@ def ventanaClientes(app: App):
     entry_rfc = tk.Entry(ventana, width=50)
     entry_rfc.place(x=100, y=110)
     
-    label_telefono = tk.Label(ventana, text="Telefono:", bg="black", fg="white")
+    label_telefono = tk.Label(ventana, text="Direccion:", bg="black", fg="white")
     label_telefono.place(x=30, y=140)
-    entry_telefono = tk.Entry(ventana, width=30)
-    entry_telefono.place(x=100, y=140)
+    entry_direccion = tk.Entry(ventana, width=30)
+    entry_direccion.place(x=100, y=140)
     
     label_usuario_id = tk.Label(ventana, text="Usuario ID:", bg="black", fg="white")
     label_usuario_id.place(x=30, y=170)
@@ -395,8 +395,8 @@ def ventanaClientes(app: App):
                 entry_nombre.insert(0, auxCli.getNombre())
                 entry_rfc.delete(0, END)
                 entry_rfc.insert(0, auxCli.getRfc())
-                entry_telefono.delete(0, END)
-                entry_telefono.insert(0, auxCli.getTelefono())
+                entry_direccion.delete(0, END)
+                entry_direccion.insert(0, auxCli.getDireccion())
                 
                 if app.userLogged.getPerfil() == "Administrador":
                     btn_editar.config(state="normal")
@@ -414,7 +414,7 @@ def ventanaClientes(app: App):
             ventana.focus()
 
     def buttonGuardar_clicked():
-            if entry_nombre.get() == "" or entry_id.get() == "" or entry_rfc.get() == "" or entry_telefono.get() == "":
+            if entry_nombre.get() == "" or entry_id.get() == "" or entry_rfc.get() == "" or entry_direccion.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
                 ventana.focus()
 
@@ -431,7 +431,7 @@ def ventanaClientes(app: App):
                     auxCliente.setID(newID)
                     auxCliente.setNombre(entry_nombre.get())
                     auxCliente.setRfc(entry_rfc.get())
-                    auxCliente.setTelefono(entry_telefono.get())
+                    auxCliente.setDireccion(entry_direccion.get())
                     auxCliente.setUsuarioID(app.userLogged.getID())
                 try:
                     app.dbc.guardarCliente(auxCliente)
@@ -443,7 +443,7 @@ def ventanaClientes(app: App):
                     entry_id.config(state="disabled")
                     entry_nombre.delete(0, END)
                     entry_rfc.delete(0, END)
-                    entry_telefono.delete(0, END)
+                    entry_direccion.delete(0, END)
                     btn_guardar.config(state="disabled")
                     btn_nuevo.config(state="normal")
                     
@@ -467,7 +467,7 @@ def ventanaClientes(app: App):
         
     def buttonEditar_clicked():
         try:
-            if entry_nombre.get() == "" or entry_id.get() == "" or entry_rfc.get() == "" or entry_telefono.get() == "":
+            if entry_nombre.get() == "" or entry_id.get() == "" or entry_rfc.get() == "" or entry_direccion.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para editar el registro.")
                 ventana.focus()
 
@@ -480,7 +480,7 @@ def ventanaClientes(app: App):
                 auxCli.setID(int(entry_id.get()))
                 auxCli.setNombre(entry_nombre.get())
                 auxCli.setRfc(entry_rfc.get())
-                auxCli.setTelefono(entry_telefono.get())
+                auxCli.setDireccion(entry_direccion.get())
                 auxCli.setUsuarioID(app.userLogged.getID())
                 edicion = app.dbc.editarCliente(auxCli)
                 if edicion:
@@ -504,7 +504,7 @@ def ventanaClientes(app: App):
         entry_id_buscar.delete(0, END)
         entry_nombre.delete(0, END)
         entry_rfc.delete(0, END)
-        entry_telefono.delete(0, END)
+        entry_direccion.delete(0, END)
 
         btn_nuevo.config(state="normal")
         btn_cancelar.config(state="disabled")
