@@ -1,5 +1,6 @@
 import articulo as art
 import conexion as con
+import detalle_articulo as det_art
 
 
 class dbarticulos:
@@ -113,3 +114,16 @@ class dbarticulos:
         except Exception as e:
             print(e)
             return False
+    
+    def guardarDetalleArticulo(self, detalle_articulo: list):
+        self.con = con.conexion()
+        self.conn = self.con.open()
+        self.cursor1 = self.conn.cursor()
+        self.sql = "INSERT INTO det_articulo (det_id, proveedor_id, articulo_id, existencia) VALUES (%s, %s, %s, %s)"
+        self.datos=(detalle_articulo[0],
+                    detalle_articulo[1],
+                    detalle_articulo[2],
+                    detalle_articulo[3])
+        self.cursor1.execute(self.sql, self.datos)
+        self.conn.commit()
+        self.conn.close()

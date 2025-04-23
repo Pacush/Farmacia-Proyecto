@@ -935,8 +935,8 @@ def ventanaArticulos(app: App):
         provs_ids.append(int(prov[1]))
         
     artsIds = {}
-    for art in articsArtIDs:
-        artsIds[int(art[1])] = art[0]
+    for articulo in articsArtIDs:
+        artsIds[int(articulo[1])] = articulo[0]
 
     #vehMatriculas = []
     #valoresMatriculas = app.dbv.vehMatriculas(app.userLogged.getID(), True)
@@ -1029,10 +1029,17 @@ def ventanaArticulos(app: App):
                 precio_uni_a_poner = float(entry_precio_venta.get())
                 precio_ven_a_poner = float(entry_precio_uni.get())
                 maxDetalleId = app.dba.maxSQL("det_id", "det_articulo")[0]
-                if not maxDetalleId:
-                    aux_detalle_art_id = 1
+                
+                if len(getIdsFromTabla()) == 0:
+                    if not maxDetalleId:
+                        aux_detalle_art_id = 1
+                    else:
+                        aux_detalle_art_id = maxDetalleId
                 else:
-                    aux_detalle_art_id = max(int(maxDetalleId), max(getIdsFromTabla())) + 1
+                    if not maxDetalleId:
+                        aux_detalle_art_id = max(getIdsFromTabla()) + 1
+                    else:
+                        aux_detalle_art_id = max(int(maxDetalleId), max(getIdsFromTabla())) + 1
                 
             except Exception as e:
                 messagebox.showerror("Cantidad inválida", "Favor de ingresar un número entero para la cantidad.")
@@ -1053,7 +1060,7 @@ def ventanaArticulos(app: App):
                 valorInt.append(int(i))
             
             valoresTabla[tabla.get_children()[len(tabla.get_children())-1]] = valorInt
-            print(valoresTabla)
+            #print(valoresTabla)
 
     def buttonQuitar_clicked(seleccion: ttk.Treeview.selection):
 
@@ -1154,7 +1161,7 @@ def ventanaArticulos(app: App):
             ventana.focus()
 
         elif len(elementosTabla) == 0:
-            messagebox.showerror("Reparacion sin detalles", "Favor de ingresar detalles de la reparación (piezas y cantidades).")
+            messagebox.showerror("Reparacion sin detalles", "Favor de ingresar detalles del articulo (proveedor y existencias).")
             ventana.focus()
         
         else:
@@ -1168,30 +1175,29 @@ def ventanaArticulos(app: App):
                 ventana.focus()
 
                 for valor in valoresGuardadoTabla:
-                    pizId = valor[2]
-                    pizCant = valor[3]
-                    pizCantActual = int(app.dbp.getCantidadPieza(pizId)[0])
-                    app.dbp.actualizarCantPieza(pizId, pizCantActual-pizCant)
-                    app.dbr.guardarDetalleReparacion(valor)
+                    artId = valor[2]
+                    artCant = valor[3]
+                    #pizCantActual = int(app.dbp.getCantidadPieza(pizId)[0])
+                    #app.dbp.actualizarCantPieza(pizId, pizCantActual-pizCant)
+                    app.dba.guardarDetalleArticulo(valor)
 
                         
-                messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la reparación con el folio matricula {auxReparacion.getFolio()}. Se registra bajo el username {app.userLogged.getUsername()}")
+                messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la reparación con el ID {auxArticulo.get_id()}.")
                 
                 valoresTabla.clear()
                 print(valoresTabla)
                 valoresAgregados.clear()
                 valoresQuitados.clear()
                 tabla.delete(*tabla.get_children())
-                entry_folio_buscar.delete(0, END)
-                entry_folio.config(state="normal")
-                entry_folio.delete(0, END)
-                entry_folio.config(state="disabled")
-                combo_pieza.delete(0, END)
-                combo_matricula.delete(0, END)
-                entry_fecha_entrada.delete(0, END)
-                entry_fecha_salida.delete(0, END)
-                entry_cantidad.delete(0, END)
-                entry_usuario_id.delete(0, END)
+                entry_id_buscar.delete(0, END)
+                entry_id.config(state="normal")
+                entry_id.delete(0, END)
+                entry_id.config(state="disabled")
+                combo_proveedor.delete(0, END)
+                entry_descripcion.delete(0, END)
+                entry_precio_uni.delete(0, END)
+                entry_precio_venta.delete(0, END)
+                entry_existencias.delete(0, END)
                 btn_nuevo.config(state="normal")
                 btn_cancelar.config(state="disabled")
                 btn_editar.config(state="disabled")
