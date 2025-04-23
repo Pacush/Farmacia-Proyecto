@@ -1,17 +1,17 @@
-import pieza as piz
+import articulo as art
 import conexion as con
 
 
-class dbpiezas:
-    def guardarPieza(self, piz: piz.Pieza):
+class dbarticulos:
+    def guardarArticulo(self, art: art.Articulo):
         self.con = con.conexion()
         self.conn = self.con.open()
         self.cursor1 = self.conn.cursor()
-        self.sql = "insert into piezas (pieza_id, descripcion, existencia, precio) values (%s, %s, %s, %s)"
-        self.datos=(piz.getID(),
-                    piz.getDescripcion(),
-                    piz.getExistencia(),
-                    piz.getPrecio())
+        self.sql = "INSERT INTO articulos (articulo_id, descripcion, precio_unitario, precio_venta) VALUES (%s, %s, %s, %s)"
+        self.datos=(art.get_id(),
+                    art.get_descripcion(),
+                    art.get_precio_unitario(),
+                    art.get_precio_venta())
         self.cursor1.execute(self.sql, self.datos)
         self.conn.commit()
         self.conn.close()
@@ -26,30 +26,30 @@ class dbpiezas:
         self.con.close()
         return row
     
-    def buscarPieza(self, piz: piz.Pieza, usrLogged: list = []):
+    def buscarArticulo(self, art: art.Articulo, usrLogged: list = []):
         self.con = con.conexion()
         self.conn = self.con.open()
         self.cursor1 = self.conn.cursor()
-        self.sql = "select * from piezas where pieza_id=%s"
-        self.datos=(piz.getID(), )
+        self.sql = "SELECT * FROM articulos WHERE articulo_id=%s"
+        self.datos=(art.get_id(), )
         self.cursor1.execute(self.sql, self.datos)
         aux = None
         row = self.cursor1.fetchone()
         if row is not None:
-            aux = piz
-            aux.setID(int(row[0]))
-            aux.setDescripcion(row[1])
-            aux.setExistencia(int(row[2]))
-            aux.setPrecio(row[3])
+            aux = art
+            aux.set_id(int(row[0]))
+            aux.set_descripcion(row[1])
+            aux.set_precio_unitario(int(row[2]))
+            aux.set_precio_venta(int(row[3]))
         return aux
     
-    def editarPieza(self, piz: piz.Pieza):
+    def editarArticulo(self, art: art.Articulo):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "UPDATE piezas SET descripcion = %s, existencia = %s, precio = %s WHERE pieza_id = %s"
-            valores = (piz.getDescripcion(), piz.getExistencia(), piz.getPrecio(), piz.getID())
+            self.sql = "UPDATE articulos SET descripcion = %s, precio_unitario = %s, precio_venta = %s WHERE articulo_id = %s"
+            valores = (art.get_descripcion(), art.get_precio_unitario(), art.get_precio_venta(), art.get_id())
             self.cursor1.execute(self.sql, valores)
             self.conn.commit()
             self.con.close()
@@ -58,12 +58,12 @@ class dbpiezas:
             print(e)
             return False
         
-    def eliminarPieza(self, id: int):
+    def eliminarArticulo(self, id: int):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "DELETE FROM piezas WHERE pieza_id = %s"
+            self.sql = "DELETE FROM articulos WHERE articulo_id = %s"
             valores = (id,)
             self.cursor1.execute(self.sql, valores)
             self.conn.commit()
@@ -77,7 +77,7 @@ class dbpiezas:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "SELECT pieza_id, descripcion, existencia FROM piezas"
+            self.sql = "SELECT articulo_id, descripcion FROM articulos"
             self.cursor1.execute(self.sql)
             rows = self.cursor1.fetchall()
             return rows
@@ -85,7 +85,7 @@ class dbpiezas:
             print(e)
             return False
 
-    def actualizarCantPieza(self, id: int, nuevaCantidad: int):
+    def actualizarCantArticulo(self, id: int, nuevaCantidad: int):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
@@ -100,7 +100,7 @@ class dbpiezas:
             print(e)
             return False
         
-    def getCantidadPieza(self, id: int):
+    def getCantidadArticulo(self, id: int):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()

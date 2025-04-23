@@ -1,16 +1,16 @@
 import tkinter as tk
 from tkinter import END, Toplevel, messagebox, ttk
 
+import articulo as art
 import cliente as cli
+import dbarticulos as dba
 import dbclientes as dbc
-import dbpiezas as dbp
+import dbproveedores as dbp
 import dbreparaciones as dbr
 import dbusuarios as dbu
-import dbvehiculos as dbv
-import pieza as piz
+import proveedor as pro
 import reparacion as rep
 import usuario as usr
-import vehiculo as veh
 
 perfiles = ["Administrador", "Gerente", "Cajero"]
 
@@ -84,9 +84,9 @@ class App(tk.Tk):
             self.menu_archivo.add_command(label="Clientes", command=lambda: ventanaClientes(self), state="disabled")
         self.menu_archivo.add_separator()
         if userLogged.getPerfil() in ["Administrador", "Auxiliar"]:
-            self.menu_archivo.add_command(label="Vehiculos", command=lambda: ventanaVehiculos(self))
+            self.menu_archivo.add_command(label="Proveedores", command=lambda: ventanaProveedores(self))
         else:
-            self.menu_archivo.add_command(label="Vehiculos", command=lambda: ventanaVehiculos(self), state="disabled")
+            self.menu_archivo.add_command(label="Proveedores", command=lambda: ventanaProveedores(self), state="disabled")
         self.menu_archivo.add_separator()
         if userLogged.getPerfil() in ["Administrador", "Mecanico"]:
             self.menu_archivo.add_command(label="Reparaciones", command=lambda: ventanaReparaciones(self))
@@ -94,9 +94,9 @@ class App(tk.Tk):
             self.menu_archivo.add_command(label="Reparaciones", command=lambda: ventanaReparaciones(self), state="disabled")
         self.menu_archivo.add_separator()
         if userLogged.getPerfil() in ["Administrador"]:
-            self.menu_archivo.add_command(label="Piezas", command=lambda: ventanaPiezas(self))
+            self.menu_archivo.add_command(label="Articulos", command=lambda: ventanaArticulos(self))
         else:
-            self.menu_archivo.add_command(label="Piezas", command=lambda: ventanaPiezas(self), state="disabled")
+            self.menu_archivo.add_command(label="Articulos", command=lambda: ventanaArticulos(self), state="disabled")
         self.menu_archivo.add_separator()
         self.menu_archivo.add_command(label="Salir", command=lambda: salir())
         
@@ -106,8 +106,8 @@ class App(tk.Tk):
         
         self.dbu = dbu.dbusuarios()
         self.dbc = dbc.dbclientes()
-        self.dbv = dbv.dbvehiculos()
-        self.dbp = dbp.dbpiezas()
+        self.dbp = dbp.dbproveedores()
+        self.dba = dba.dbarticulos()
         self.dbr = dbr.dbreparaciones()
         
         def salir():
@@ -529,222 +529,10 @@ def ventanaClientes(app: App):
         else:
             ventana.focus()
 
-def ventanaVehiculos(app: App):
+def ventanaArticulos(app: App):
     ventana = tk.Toplevel()
     ventana.config(width=500, height=500, bg="black")
-    ventana.title("Vehiculos")
-    
-    isAdmin = app.userLogged.getPerfil() == "Administrador"
-    cliNombresID = app.dbc.dictClientesId(app.userLogged.getID(), isAdmin)
-    cliNombres = []
-    cliIDs = []
-    for cliente in cliNombresID:
-        cliIDs.append(int(cliente[0]))
-        cliNombres.append(cliente[1])
-    
-    label_id_buscar = tk.Label(ventana, text="Ingrese matricula a buscar:", bg="black", fg="white")
-    label_id_buscar.place(x=30, y=10)
-    entry_id_buscar = tk.Entry(ventana, width=30)
-    entry_id_buscar.place(x=180, y=10)
-    btn_id_buscar = tk.Button(ventana, text="Buscar", command=lambda: buttonBuscar_clicked(), width=10)
-    btn_id_buscar.place(x=370, y=10)
-    
-    label_matricula = tk.Label(ventana, text="Matricula:", bg="black", fg="white")
-    label_matricula.place(x=30, y=50)
-    entry_matricula = tk.Entry(ventana)
-    entry_matricula.place(x=100, y=50)
-    
-    label_nombre = tk.Label(ventana, text="Cliente:", bg="black", fg="white")
-    label_nombre.place(x=30, y=80)
-    combo_cliente = ttk.Combobox(ventana, values=cliNombres, width=30)
-    combo_cliente.place(x=100, y=80)
-    
-    label_marca = tk.Label(ventana, text="Marca:", bg="black", fg="white")
-    label_marca.place(x=30, y=110)
-    entry_marca = tk.Entry(ventana, width=50)
-    entry_marca.place(x=100, y=110)
-    
-    label_modelo = tk.Label(ventana, text="Modelo:", bg="black", fg="white")
-    label_modelo.place(x=30, y=140)
-    entry_modelo = tk.Entry(ventana, width=30)
-    entry_modelo.place(x=100, y=140)
-    
-    label_usuario_id = tk.Label(ventana, text="Usuario ID:", bg="black", fg="white")
-    label_usuario_id.place(x=30, y=170)
-    entry_usuario_id = tk.Entry(ventana, width=30)
-    entry_usuario_id.place(x=100, y=170)
-    entry_usuario_id.insert(0, app.userLogged.getID())
-    entry_usuario_id.config(state="disabled")
-    
-    frame_botones = tk.Frame(ventana, bg="black")
-    frame_botones.place(x=30, y=210)
-    
-    btn_nuevo = tk.Button(frame_botones, text="Nuevo", state="normal", command=lambda: buttonNuevo_clicked())
-    btn_guardar = tk.Button(frame_botones, text="Guardar", state="disabled", command=lambda: buttonGuardar_clicked())
-    btn_cancelar = tk.Button(frame_botones, text="Cancelar", state="disabled", command=lambda: buttonCancelar_clicked())
-    btn_editar = tk.Button(frame_botones, text="Editar", state="disabled", command=lambda: buttonEditar_clicked())
-    btn_remover = tk.Button(frame_botones, text="Remover", state="disabled", command=lambda: ventanaEliminarVehiculo())
-    
-    btn_nuevo.pack(side="left", padx=5)
-    btn_guardar.pack(side="left", padx=5)
-    btn_cancelar.pack(side="left", padx=5)
-    btn_editar.pack(side="left", padx=5)
-    btn_remover.pack(side="left", padx=5)
-    
-    
-    vehSearched = tk.StringVar()
-
-    def buttonBuscar_clicked():
-        try:
-            veh_ = veh.Vehiculo()
-            veh_.setMatricula(entry_id_buscar.get())
-            auxVeh = app.dbv.buscarVehiculos(veh_)
-            if auxVeh:
-                idCliente = veh_.getClienteID()
-                cliNombre = cliNombres[cliIDs.index(idCliente)]
-                entry_matricula.delete(0, END)
-                entry_matricula.insert(0, auxVeh.getMatricula())
-                vehSearched.set(auxVeh.getMatricula())
-                combo_cliente.delete(0, END)
-                combo_cliente.insert(0, cliNombre)
-                entry_marca.delete(0, END)
-                entry_marca.insert(0, auxVeh.getMarca())
-                entry_modelo.delete(0, END)
-                entry_modelo.insert(0, auxVeh.getModelo())
-                btn_cancelar.config(state="normal")
-                btn_nuevo.config(state="disabled")
-                if isAdmin:
-                    btn_editar.config(state="normal")
-                    btn_remover.config(state="normal")
-            else:
-                messagebox.showerror("Vehiculo no encontrado", "El vehiculo no se encuentra registrado en la DB.")
-                ventana.focus()
-        except Exception as e:
-            messagebox.showerror("Valor no válido", "Favor de ingresar una matricula válida en el campo 'Matricula'.")
-            print(e)
-            ventana.focus()
-
-    def buttonGuardar_clicked():
-
-        veh_ = veh.Vehiculo()
-        veh_.setMatricula(entry_matricula.get())
-        
-        auxVeh = app.dbv.buscarVehiculos(veh_)
-        
-        if entry_matricula.get() == "" or combo_cliente.get() == "" or entry_marca.get() == "" or entry_modelo.get() == "":
-            messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
-            ventana.focus()
-            
-        elif not (combo_cliente.get() in cliNombres):
-            messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
-            ventana.focus()
-            
-        elif auxVeh != None:
-            messagebox.showerror("Matrícula repetida", "La matrícula ingresada ya está ingresada en los registros.")
-            ventana.focus()
-        
-        else:
-            cliID = cliIDs[cliNombres.index(combo_cliente.get())]
-            auxVehiculo= veh.Vehiculo()
-            auxVehiculo.setMatricula(entry_matricula.get())
-            auxVehiculo.setClienteID(cliID)
-            auxVehiculo.setMarca(entry_marca.get())
-            auxVehiculo.setModelo(entry_modelo.get())
-            auxVehiculo.setUsuarioID(app.userLogged.getID())
-            try:
-                app.dbv.guardarVehiculo(auxVehiculo)
-                messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente al vehiculo con la matricula {auxVehiculo.getMatricula()}. Se registra bajo el username {app.userLogged.getUsername()}", )
-                ventana.focus()
-                
-                entry_matricula.delete(0, END)
-                combo_cliente.delete(0, END)
-                entry_marca.delete(0, END)
-                entry_modelo.delete(0, END)
-                btn_guardar.config(state="disabled")
-                btn_cancelar.config(state="disabled")
-                btn_nuevo.config(state="normal")
-                
-            except Exception as e:
-                messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
-                print(e)
-    
-    def buttonNuevo_clicked():
-        entry_matricula.delete(0, END)
-        entry_id_buscar.delete(0, END)
-        combo_cliente.delete(0, END)
-        entry_marca.delete(0, END)
-        entry_modelo.delete(0, END)
-        btn_guardar.config(state="normal")
-        btn_cancelar.config(state="normal")
-        
-    def buttonEditar_clicked():
-        try:
-            if entry_matricula.get() == "" or combo_cliente.get() == "" or entry_marca.get() == "" or entry_modelo.get() == "":
-                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
-                ventana.focus()
-                
-            elif not (combo_cliente.get() in cliNombres):
-                messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
-                ventana.focus()
-
-            else:
-                cliID = cliIDs[cliNombres.index(combo_cliente.get())]
-                auxVehiculo = veh.Vehiculo()
-                auxVehiculo.setMatricula(entry_matricula.get())
-                auxVehiculo.setClienteID(cliID)
-                auxVehiculo.setMarca(entry_marca.get())
-                auxVehiculo.setModelo(entry_modelo.get())
-                auxVehiculo.setUsuarioID(app.userLogged.getID())
-    
-                edicion = app.dbv.editarVehiculos(auxVehiculo, vehSearched.get())
-                if edicion:
-                    messagebox.showinfo("Edición exitosa", "Se han editado correctamente los datos del vehiculo.")
-                    buttonCancelar_clicked()
-                    ventana.focus()
-                    
-                else:
-                    messagebox.showerror("Edición fallida", "No ha sido posible editar los datos del cliente.")
-                    ventana.focus()
-                
-        except Exception as e:
-            messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
-            ventana.focus()
-            print(e)
-
-    def buttonCancelar_clicked():
-        entry_matricula.delete(0, END)
-        entry_id_buscar.delete(0, END)
-        combo_cliente.delete(0, END)
-        entry_marca.delete(0, END)
-        entry_modelo.delete(0, END)
-        btn_nuevo.config(state="normal")
-        btn_guardar.config(state="disabled")
-        btn_cancelar.config(state="disabled")
-        btn_editar.config(state="disabled")
-        btn_remover.config(state="disabled")
-        
-    def ventanaEliminarVehiculo():
-        auxVeh = veh.Vehiculo()
-        auxVeh.setMatricula(entry_matricula.get())
-        
-        confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar al vehículo con matricula {auxVeh.getMatricula()}?")
-        if confirmation:
-            if app.dbv.eliminarVehiculo(auxVeh.getMatricula()):
-                messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente al vehículo con matricula {auxVeh.getMatricula()}.")
-                buttonCancelar_clicked()
-                ventana.focus()
-                
-            else:
-                messagebox.showerror("Eliminación fallida", "No ha sido posible elimiar al vehículo.")
-                ventana.focus()
-                
-        else:
-            ventana.focus()
-
-def ventanaPiezas(app: App):
-    ventana = tk.Toplevel()
-    ventana.config(width=500, height=500, bg="black")
-    ventana.title("Piezas")
+    ventana.title("Articulos")
     
     label_id_buscar = tk.Label(ventana, text="Ingrese ID a buscar:", bg="black", fg="white")
     label_id_buscar.place(x=30, y=10)
@@ -763,15 +551,15 @@ def ventanaPiezas(app: App):
     entry_descripcion = tk.Entry(ventana, width=50)
     entry_descripcion.place(x=100, y=80)
     
-    label_existencia = tk.Label(ventana, text="Existencia:", bg="black", fg="white")
-    label_existencia.place(x=30, y=110)
-    entry_existencia = tk.Entry(ventana, width=30)
-    entry_existencia.place(x=100, y=110)
+    label_precio_uni = tk.Label(ventana, text="Precio Unitario:", bg="black", fg="white")
+    label_precio_uni.place(x=30, y=110)
+    entry_precio_uni = tk.Entry(ventana, width=30)
+    entry_precio_uni.place(x=100, y=110)
     
-    label_precio = tk.Label(ventana, text="Precio:", bg="black", fg="white")
-    label_precio.place(x=30, y=140)
-    entry_precio = tk.Entry(ventana, width=30)
-    entry_precio.place(x=100, y=140)
+    label_precio_venta = tk.Label(ventana, text="Precio Venta:", bg="black", fg="white")
+    label_precio_venta.place(x=30, y=140)
+    entry_precio_venta = tk.Entry(ventana, width=30)
+    entry_precio_venta.place(x=100, y=140)
     
     frame_botones = tk.Frame(ventana, bg="black")
     frame_botones.place(x=30, y=210)
@@ -788,30 +576,24 @@ def ventanaPiezas(app: App):
     btn_editar.pack(side="left", padx=5)
     btn_remover.pack(side="left", padx=5)
     
-    #if app.userLogged.getPerfil() == "Administrador" or app.userLogged.getPerfil() == "Auxiliar":
-    #    btn_nuevo.config(state="normal")
-    #else:
-    #    btn_nuevo.config(state="disabled")
-    
-
     def buttonBuscar_clicked():
         try:
-            piz_ = piz.Pieza()
-            piz_.setID(int(entry_id_buscar.get()))
-            auxPiz = app.dbp.buscarPieza(piz_, [app.userLogged.getID(), app.userLogged.getPerfil()])
+            art_ = art.Articulo()
+            art_.set_id(int(entry_id_buscar.get()))
+            auxArt = app.dba.buscarArticulo(art_, [app.userLogged.getID(), app.userLogged.getPerfil()])
             
             
-            if auxPiz:
+            if auxArt:
                 entry_id.config(state="normal")
                 entry_id.delete(0, END)
-                entry_id.insert(0, auxPiz.getID())
+                entry_id.insert(0, auxArt.get_id())
                 entry_id.config(state="disabled")
                 entry_descripcion.delete(0, END)
-                entry_descripcion.insert(0, auxPiz.getDescripcion())
-                entry_existencia.delete(0, END)
-                entry_existencia.insert(0, auxPiz.getExistencia())
-                entry_precio.delete(0, END)
-                entry_precio.insert(0, auxPiz.getPrecio())
+                entry_descripcion.insert(0, auxArt.get_descripcion())
+                entry_precio_uni.delete(0, END)
+                entry_precio_uni.insert(0, auxArt.get_precio_unitario())
+                entry_precio_venta.delete(0, END)
+                entry_precio_venta.insert(0, auxArt.get_precio_venta())
 
                 btn_cancelar.config(state="normal")
                 btn_editar.config(state="normal")
@@ -819,7 +601,7 @@ def ventanaPiezas(app: App):
 
                 
             else:
-                messagebox.showerror("Pieza no encontrada", "La pieza no se encuentra registrada en la DB.")
+                messagebox.showerror("Articulo no encontrado", "El articulo no se encuentra registrado en la DB.")
                 ventana.focus()
             
         except Exception as e:
@@ -828,32 +610,33 @@ def ventanaPiezas(app: App):
             ventana.focus()
 
     def buttonGuardar_clicked():
-            if entry_descripcion.get() == "" or entry_id.get() == "" or entry_existencia.get() == "" or entry_precio.get() == "":
+            if entry_descripcion.get() == "" or entry_id.get() == "" or entry_precio_uni.get() == "" or entry_precio_venta.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
                 ventana.focus()
             
             else:
-                auxPieza= piz.Pieza()
+                auxArticulo= art.Articulo()
                 newID = int(entry_id.get())
                 if not newID:
-                    auxPieza.setID(1)
+                    auxArticulo.set_id(1)
                 else:
-                    auxPieza.setID(newID)
-                    auxPieza.setID(newID)
-                    auxPieza.setDescripcion(entry_descripcion.get())
-                    auxPieza.setExistencia(entry_existencia.get())
-                    auxPieza.setPrecio(entry_precio.get())
+                    auxArticulo.set_id(newID)
+                    auxArticulo.set_descripcion(entry_descripcion.get())
+                    auxArticulo.set_precio_unitario(float(entry_precio_uni.get()))
+                    auxArticulo.set_precio_venta(float(entry_precio_venta.get()))
                 try:
-                    app.dbp.guardarPieza(auxPieza)
-                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la pieza con el ID {auxPieza.getID()}.")
+                    app.dba.guardarArticulo(auxArticulo)
+                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente el articulo con el ID {auxArticulo.get_id()}.")
                     ventana.focus()
                     
                     entry_id.config(state="normal")
                     entry_id.delete(0, END)
                     entry_id.config(state="disabled")
                     entry_descripcion.delete(0, END)
-                    entry_existencia.delete(0, END)
-                    entry_precio.delete(0, END)
+                    entry_precio_uni.delete(0, END)
+                    entry_precio_uni.delete(0, END)
+                    entry_precio_venta.delete(0, END)
+                    entry_precio_venta.delete(0, END)
                     btn_guardar.config(state="disabled")
                     btn_nuevo.config(state="normal")
                     
@@ -864,7 +647,7 @@ def ventanaPiezas(app: App):
     def buttonNuevo_clicked():
         btn_nuevo.config(state="disabled")
 
-        max = app.dbp.maxSQL("pieza_id", "piezas")[0]
+        max = app.dba.maxSQL("articulo_id", "articulos")[0]
         if max == None:
             newID = 1
         else:
@@ -877,24 +660,24 @@ def ventanaPiezas(app: App):
         
     def buttonEditar_clicked():
         try:
-            if entry_descripcion.get() == "" or entry_id.get() == "" or entry_existencia.get() == "" or entry_precio.get() == "":
+            if entry_descripcion.get() == "" or entry_id.get() == "" or entry_precio_uni.get() == "" or entry_precio_venta.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para editar el registro.")
                 ventana.focus()
 
             else:
-                auxPiz = piz.Pieza()
-                auxPiz.setID(int(entry_id.get()))
-                auxPiz.setDescripcion(entry_descripcion.get())
-                auxPiz.setExistencia(int(entry_existencia.get()))
-                auxPiz.setPrecio(float(entry_precio.get()))
-                edicion = app.dbp.editarPieza(auxPiz)
+                auxArt = art.Articulo()
+                auxArt.set_id(int(entry_id.get()))
+                auxArt.set_descripcion(entry_descripcion.get())
+                auxArt.set_precio_unitario(float(entry_precio_uni.get()))
+                auxArt.set_precio_venta(float(entry_precio_venta.get()))
+                edicion = app.dba.editarArticulo(auxArt)
                 if edicion:
-                    messagebox.showinfo("Edición exitosa", "Se han editado correctamente los datos de la pieza.")
+                    messagebox.showinfo("Edición exitosa", "Se han editado correctamente los datos del articulo.")
                     buttonCancelar_clicked()
                     ventana.focus()
                     
                 else:
-                    messagebox.showerror("Edición fallida", "No ha sido posible editar los datos de la pieza.")
+                    messagebox.showerror("Edición fallida", "No ha sido posible editar los datos del articulo.")
                     ventana.focus()
                 
         except Exception as e:
@@ -908,8 +691,8 @@ def ventanaPiezas(app: App):
         entry_id.config(state="disabled")
         entry_id_buscar.delete(0, END)
         entry_descripcion.delete(0, END)
-        entry_existencia.delete(0, END)
-        entry_precio.delete(0, END)
+        entry_precio_uni.delete(0, END)
+        entry_precio_venta.delete(0, END)
 
         #if app.userLogged.getPerfil() == "Administrador" or app.userLogged.getPerfil() == "Auxiliar":
         #    btn_nuevo.config(state="normal")
@@ -922,22 +705,213 @@ def ventanaPiezas(app: App):
         btn_remover.config(state="disabled")
         
     def ventanaEliminarPieza():
-        auxPiz = piz.Pieza()
-        auxPiz.setID(int(entry_id.get()))
+        auxArt = art.Articulo()
+        auxArt.set_id(int(entry_id.get()))
         
-        confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar la pieza con ID {auxPiz.getID()}?")
+        confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar el articulo con ID {auxArt.get_id()}?")
         if confirmation:
-            if app.dbp.eliminarPieza(auxPiz.getID()):
-                messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente la pieza cliente con ID {auxPiz.getID()}.")
+            if app.dba.eliminarArticulo(auxArt.get_id()):
+                messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente el articulo cliente con ID {auxArt.get_id()}.")
                 buttonCancelar_clicked()
                 ventana.focus()
                 
             else:
-                messagebox.showerror("Eliminación fallida", "No ha sido posible elimiar la pieza.")
+                messagebox.showerror("Eliminación fallida", "No ha sido posible elimiar el articulo.")
                 ventana.focus()
                 
         else:
             ventana.focus()
+
+def ventanaProveedores(app: App):
+    ventana = tk.Toplevel()
+    ventana.config(width=500, height=500, bg="black")
+    ventana.title("Proveedores")
+    
+    label_id_buscar = tk.Label(ventana, text="Ingrese ID a buscar:", bg="black", fg="white")
+    label_id_buscar.place(x=30, y=10)
+    entry_id_buscar = tk.Entry(ventana, width=30)
+    entry_id_buscar.place(x=140, y=10)
+    btn_id_buscar = tk.Button(ventana, text="Buscar", command=lambda: buttonBuscar_clicked(), width=10)
+    btn_id_buscar.place(x=330, y=10)
+    
+    label_id = tk.Label(ventana, text="ID:", bg="black", fg="white")
+    label_id.place(x=30, y=50)
+    entry_id = tk.Entry(ventana, state="disabled")
+    entry_id.place(x=100, y=50)
+    
+    label_nombre = tk.Label(ventana, text="Nombre:", bg="black", fg="white")
+    label_nombre.place(x=30, y=80)
+    entry_nombre = tk.Entry(ventana, width=50)
+    entry_nombre.place(x=100, y=80)
+    
+    label_empresa = tk.Label(ventana, text="Empresa:", bg="black", fg="white")
+    label_empresa.place(x=30, y=110)
+    entry_empresa = tk.Entry(ventana, width=30)
+    entry_empresa.place(x=100, y=110)
+    
+    label_telefono = tk.Label(ventana, text="Telefono:", bg="black", fg="white")
+    label_telefono.place(x=30, y=140)
+    entry_telefono = tk.Entry(ventana, width=30)
+    entry_telefono.place(x=100, y=140)
+    
+    frame_botones = tk.Frame(ventana, bg="black")
+    frame_botones.place(x=30, y=210)
+    
+    btn_nuevo = tk.Button(frame_botones, text="Nuevo", state="normal", command=lambda: buttonNuevo_clicked())
+    btn_guardar = tk.Button(frame_botones, text="Guardar", state="disabled", command=lambda: buttonGuardar_clicked())
+    btn_cancelar = tk.Button(frame_botones, text="Cancelar", state="disabled", command=lambda: buttonCancelar_clicked())
+    btn_editar = tk.Button(frame_botones, text="Editar", state="disabled", command=lambda: buttonEditar_clicked())
+    btn_remover = tk.Button(frame_botones, text="Remover", state="disabled", command=lambda: ventanaEliminar())
+    
+    btn_nuevo.pack(side="left", padx=5)
+    btn_guardar.pack(side="left", padx=5)
+    btn_cancelar.pack(side="left", padx=5)
+    btn_editar.pack(side="left", padx=5)
+    btn_remover.pack(side="left", padx=5)
+    
+    def buttonBuscar_clicked():
+        try:
+            pro_ = pro.Proveedor()
+            pro_.set_proveedor_id(int(entry_id_buscar.get()))
+            auxPro = app.dbp.buscarProveedor(pro_)
+            
+            if auxPro:
+                entry_id.config(state="normal")
+                entry_id.delete(0, END)
+                entry_id.insert(0, auxPro.get_proveedor_id())
+                entry_id.config(state="disabled")
+                entry_nombre.delete(0, END)
+                entry_nombre.insert(0, auxPro.get_nombre())
+                entry_empresa.delete(0, END)
+                entry_empresa.insert(0, auxPro.get_empresa())
+                entry_telefono.delete(0, END)
+                entry_telefono.insert(0, auxPro.get_telefono())
+
+                btn_cancelar.config(state="normal")
+                btn_editar.config(state="normal")
+                btn_remover.config(state="normal")
+
+                
+            else:
+                messagebox.showerror("Proveedor no encontrado", "El proveedor no se encuentra registrado en la DB.")
+                ventana.focus()
+            
+        except Exception as e:
+            messagebox.showerror("Valor no válido", "Favor de ingresar un número entero en el campo 'ID'.")
+            print(e)
+            ventana.focus()
+
+    def buttonGuardar_clicked():
+            if entry_empresa.get() == "" or entry_id.get() == "" or entry_nombre.get() == "" or entry_telefono.get() == "":
+                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
+                ventana.focus()
+            
+            else:
+                auxProveedor= pro.Proveedor()
+                newID = int(entry_id.get())
+                if not newID:
+                    auxProveedor.set_id(1)
+                else:
+                    auxProveedor.set_proveedor_id(newID)
+                    auxProveedor.set_nombre(entry_nombre.get())
+                    auxProveedor.set_empresa(entry_empresa.get())
+                    auxProveedor.set_telefono(entry_telefono.get())
+                try:
+                    app.dbp.guardarProveedor(auxProveedor)
+                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente el proveedor con el ID {auxProveedor.get_proveedor_id()}.")
+                    ventana.focus()
+                    
+                    entry_id.config(state="normal")
+                    entry_id.delete(0, END)
+                    entry_id.config(state="disabled")
+                    entry_nombre.delete(0, END)
+                    entry_empresa.delete(0, END)
+                    entry_telefono.delete(0, END)
+                    btn_guardar.config(state="disabled")
+                    btn_nuevo.config(state="normal")
+                    
+                except Exception as e:
+                    messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
+                    print(e)
+    
+    def buttonNuevo_clicked():
+        btn_nuevo.config(state="disabled")
+
+        max = app.dbp.maxSQL("proveedor_id", "proveedores")[0]
+        if max == None:
+            newID = 1
+        else:
+            newID = max + 1
+
+        entry_id.config(state="normal")
+        entry_id.insert(0, newID)
+        entry_id.config(state="disabled")
+        btn_guardar.config(state="normal")
+        
+    def buttonEditar_clicked():
+        try:
+            if entry_nombre.get() == "" or entry_id.get() == "" or entry_empresa.get() == "" or entry_telefono.get() == "":
+                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para editar el registro.")
+                ventana.focus()
+
+            else:
+                auxPro = pro.Proveedor()
+                auxPro.set_proveedor_id(int(entry_id.get()))
+                auxPro.set_nombre(entry_nombre.get())
+                auxPro.set_empresa(entry_empresa.get())
+                auxPro.set_telefono(entry_telefono.get())
+                edicion = app.dbp.editarProveedor(auxPro)
+                if edicion:
+                    messagebox.showinfo("Edición exitosa", "Se han editado correctamente los datos del proveedor.")
+                    buttonCancelar_clicked()
+                    ventana.focus()
+                    
+                else:
+                    messagebox.showerror("Edición fallida", "No ha sido posible editar los datos del proveedor.")
+                    ventana.focus()
+                
+        except Exception as e:
+            messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
+            ventana.focus()
+            print(e)
+
+    def buttonCancelar_clicked():
+        entry_id.config(state="normal")
+        entry_id.delete(0, END)
+        entry_id.config(state="disabled")
+        entry_id_buscar.delete(0, END)
+        entry_nombre.delete(0, END)
+        entry_empresa.delete(0, END)
+        entry_telefono.delete(0, END)
+
+        #if app.userLogged.getPerfil() == "Administrador" or app.userLogged.getPerfil() == "Auxiliar":
+        #    btn_nuevo.config(state="normal")
+        #else:
+        #    btn_nuevo.config(state="disabled")
+
+        btn_nuevo.config(state="normal")
+        btn_cancelar.config(state="disabled")
+        btn_editar.config(state="disabled")
+        btn_remover.config(state="disabled")
+        
+    def ventanaEliminar():
+        auxPro = pro.Proveedor()
+        auxPro.set_proveedor_id(int(entry_id.get()))
+        
+        confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar el proveedor con ID {auxPro.get_proveedor_id()}?")
+        if confirmation:
+            if app.dbp.eliminarProveedor(auxPro.get_proveedor_id()):
+                messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente el proveedor con ID {auxPro.get_proveedor_id()}.")
+                buttonCancelar_clicked()
+                ventana.focus()
+                
+            else:
+                messagebox.showerror("Eliminación fallida", "No ha sido posible elimiar el articulo.")
+                ventana.focus()
+                
+        else:
+            ventana.focus()
+
 
 global valoresTabla, valoresQuitados, valoresAgregados
 valoresTabla = {}
