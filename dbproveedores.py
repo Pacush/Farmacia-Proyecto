@@ -71,3 +71,16 @@ class dbproveedores:
         except Exception as e:
             print(e)
             return False
+        
+    def dictProvIDs(self):
+        try:
+            self.con = con.conexion()
+            self.conn = self.con.open()
+            self.cursor1 = self.conn.cursor()
+            self.sql = "SELECT nombre, proveedor_id FROM proveedores"
+            self.cursor1.execute(self.sql)
+            rows = self.cursor1.fetchall()
+            return rows
+        except Exception as e:
+            print(e)
+            return False

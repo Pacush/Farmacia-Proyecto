@@ -72,12 +72,12 @@ class dbarticulos:
             print(e)
             return False
         
-    def dictPiezasId(self):
+    def dictArtIDs(self):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "SELECT articulo_id, descripcion FROM articulos"
+            self.sql = "SELECT descripcion, articulo_id FROM articulos"
             self.cursor1.execute(self.sql)
             rows = self.cursor1.fetchall()
             return rows

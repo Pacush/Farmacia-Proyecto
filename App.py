@@ -78,20 +78,15 @@ class App(tk.Tk):
         else:
             self.menu_archivo.add_command(label="Usuario", command=lambda: ventanaUsuarios(self), state="disabled")
         self.menu_archivo.add_separator()
-        if userLogged.getPerfil() in ["Administrador", "Auxiliar"]:
+        if userLogged.getPerfil() in ["Administrador", "Cajero"]:
             self.menu_archivo.add_command(label="Clientes", command=lambda: ventanaClientes(self))
         else:
             self.menu_archivo.add_command(label="Clientes", command=lambda: ventanaClientes(self), state="disabled")
         self.menu_archivo.add_separator()
-        if userLogged.getPerfil() in ["Administrador", "Auxiliar"]:
+        if userLogged.getPerfil() in ["Administrador"]:
             self.menu_archivo.add_command(label="Proveedores", command=lambda: ventanaProveedores(self))
         else:
             self.menu_archivo.add_command(label="Proveedores", command=lambda: ventanaProveedores(self), state="disabled")
-        self.menu_archivo.add_separator()
-        if userLogged.getPerfil() in ["Administrador", "Mecanico"]:
-            self.menu_archivo.add_command(label="Reparaciones", command=lambda: ventanaReparaciones(self))
-        else:
-            self.menu_archivo.add_command(label="Reparaciones", command=lambda: ventanaReparaciones(self), state="disabled")
         self.menu_archivo.add_separator()
         if userLogged.getPerfil() in ["Administrador"]:
             self.menu_archivo.add_command(label="Articulos", command=lambda: ventanaArticulos(self))
@@ -529,7 +524,7 @@ def ventanaClientes(app: App):
         else:
             ventana.focus()
 
-def ventanaArticulos(app: App):
+def ventanaArticulos1(app: App):
     ventana = tk.Toplevel()
     ventana.config(width=500, height=500, bg="black")
     ventana.title("Articulos")
@@ -913,79 +908,84 @@ def ventanaProveedores(app: App):
             ventana.focus()
 
 
-global valoresTabla, valoresQuitados, valoresAgregados
+global valoresTabla
+global valoresQuitados
+global valoresAgregados
 valoresTabla = {}
 valoresQuitados = []
 valoresAgregados = []
 
-def ventanaReparaciones(app: App):
+def ventanaArticulos(app: App):
     ventana = tk.Toplevel()
     ventana.config(width=600, height=600, bg="black")
-    ventana.title("Reparaciones")
+    ventana.title("Articulos")
     
     isAdmin = app.userLogged.getPerfil() == "Administrador"
-    pizNombresIDCant = app.dbp.dictPiezasId()
+    provsProvIDs = app.dbp.dictProvIDs()
+    articsArtIDs = app.dba.dictArtIDs()
+    
     pizNombres = []
     pizIDs = []
     pizCants = []
-    for pieza in pizNombresIDCant:
-        pizIDs.append(int(pieza[0]))
-        pizNombres.append(pieza[1])
-        pizCants.append(int(pieza[2]))
-    vehMatriculas = []
-    valoresMatriculas = app.dbv.vehMatriculas(app.userLogged.getID(), True)
-    for valor in valoresMatriculas:
-        vehMatriculas.append(valor[0])
-
-    label_folio_buscar = tk.Label(ventana, text="Ingrese folio a buscar:", bg="black", fg="white")
-    label_folio_buscar.place(x=30, y=10)
-    entry_folio_buscar = tk.Entry(ventana, width=30)
-    entry_folio_buscar.place(x=180, y=10)
-    btn_folio_buscar = tk.Button(ventana, text="Buscar", command=lambda: buttonBuscar_clicked(), width=10)
-    btn_folio_buscar.place(x=370, y=10)
     
-    label_folio = tk.Label(ventana, text="Folio:", bg="black", fg="white")
-    label_folio.place(x=30, y=50)
-    entry_folio = tk.Entry(ventana, state="disabled")
-    entry_folio.place(x=115, y=50)
-    
-    label_pieza = tk.Label(ventana, text="Pieza:", bg="black", fg="white")
-    label_pieza.place(x=30, y=80)
-    combo_pieza = ttk.Combobox(ventana, values=pizNombres, width=30)
-    combo_pieza.place(x=115, y=80)
+    provs = []
+    provs_ids = []
+    for prov in provsProvIDs:
+        provs.append(prov[0])
+        provs_ids.append(int(prov[1]))
+        
+    artsIds = {}
+    for art in articsArtIDs:
+        artsIds[int(art[1])] = art[0]
 
-    label_matricula = tk.Label(ventana, text="Matricula:", bg="black", fg="white")
-    label_matricula.place(x=30, y=110)
-    combo_matricula = ttk.Combobox(ventana, values=vehMatriculas, width=30)
-    combo_matricula.place(x=115, y=110)
-    
-    label_fecha_entrada = tk.Label(ventana, text="Fecha entrada:", bg="black", fg="white")
-    label_fecha_entrada.place(x=30, y=140)
-    entry_fecha_entrada = tk.Entry(ventana, width=30)
-    entry_fecha_entrada.place(x=115, y=140)
+    #vehMatriculas = []
+    #valoresMatriculas = app.dbv.vehMatriculas(app.userLogged.getID(), True)
+    #for valor in valoresMatriculas:
+    #    vehMatriculas.append(valor[0])
 
-    label_fecha_salida = tk.Label(ventana, text="Fecha salida:", bg="black", fg="white")
-    label_fecha_salida.place(x=30, y=170)
-    entry_fecha_salida = tk.Entry(ventana, width=30)
-    entry_fecha_salida.place(x=115, y=170)
-
-    label_cantidad = tk.Label(ventana, text="Cantidad:", bg="black", fg="white")
-    label_cantidad.place(x=30, y=200)
-    entry_cantidad = tk.Entry(ventana, width=30)
-    entry_cantidad.place(x=115, y=200)
+    label_id_buscar = tk.Label(ventana, text="Ingrese ID a buscar:", bg="black", fg="white")
+    label_id_buscar.place(x=30, y=10)
+    entry_id_buscar = tk.Entry(ventana, width=30)
+    entry_id_buscar.place(x=180, y=10)
+    btn_id_buscar = tk.Button(ventana, text="Buscar", command=lambda: buttonBuscar_clicked(), width=10)
+    btn_id_buscar.place(x=370, y=10)
     
-    label_usuario_id = tk.Label(ventana, text="Usuario ID:", bg="black", fg="white")
-    label_usuario_id.place(x=30, y=230)
-    entry_usuario_id = tk.Entry(ventana, width=30)
-    entry_usuario_id.place(x=115, y=230)
-    entry_usuario_id.insert(0, app.userLogged.getID())
-    entry_usuario_id.config(state="disabled")
+    label_id = tk.Label(ventana, text="ID:", bg="black", fg="white")
+    label_id.place(x=30, y=50)
+    entry_id = tk.Entry(ventana, state="disabled")
+    entry_id.place(x=115, y=50)
+    
+    label_descripcion = tk.Label(ventana, text="Descripcion:", bg="black", fg="white")
+    label_descripcion.place(x=30, y=80)
+    entry_descripcion = tk.Entry(ventana, width=30)
+    entry_descripcion.place(x=115, y=80)
+
+    label_precio_uni = tk.Label(ventana, text="Precio Unitario:", bg="black", fg="white")
+    label_precio_uni.place(x=30, y=110)
+    entry_precio_uni = tk.Entry(ventana, width=30)
+    entry_precio_uni.place(x=115, y=110)
+    
+    label_precio_venta = tk.Label(ventana, text="Precio Venta:", bg="black", fg="white")
+    label_precio_venta.place(x=30, y=140)
+    entry_precio_venta = tk.Entry(ventana, width=30)
+    entry_precio_venta.place(x=115, y=140)
+
+    label_proveedor = tk.Label(ventana, text="Proveedor:", bg="black", fg="white")
+    label_proveedor.place(x=30, y=170)
+    combo_proveedor = ttk.Combobox(ventana, values=provs, width=30)
+    combo_proveedor.place(x=115, y=170)
+
+    label_existencias = tk.Label(ventana, text="Existencias:", bg="black", fg="white")
+    label_existencias.place(x=30, y=200)
+    entry_existencias = tk.Entry(ventana, width=30)
+    entry_existencias.place(x=115, y=200)
     
     frame_botones1 = tk.Frame(ventana, bg="black")
     frame_botones1.place(x=30, y=270)
 
-    columnas = ["Índice", "Folio", "Pieza ID", "Cantidad"]
-    tabla = ttk.Treeview(ventana, columns=("Índice", "Folio", "Pieza ID", "Cantidad"), show="headings")
+    columnas = ["Índice", "Proveedor ID", "Articulo ID", "Existencias"]
+    
+    tabla = ttk.Treeview(ventana, columns=columnas, show="headings")
     for columna in columnas:
         tabla.heading(columna, text=columna)
         tabla.column(columna, width=10, stretch=tk.YES)
@@ -1016,52 +1016,37 @@ def ventanaReparaciones(app: App):
     
     def buttonAgregar_clicked():
         
-        if entry_folio.get() == "" or combo_pieza.get() == "" or combo_matricula.get() == "" or entry_fecha_entrada.get() == "" or entry_fecha_salida.get() == "" or entry_cantidad.get() == "":
+        if entry_id.get() == "" or entry_descripcion.get() == "" or entry_precio_uni.get() == "" or entry_precio_venta.get() == "" or combo_proveedor.get() == "" or entry_existencias.get() == "":
             messagebox.showerror("Campos faltantes", "Faltan campos por llenar para agregar el registro.")
             ventana.focus()
-        elif not (combo_matricula.get() in vehMatriculas) or not (combo_pieza.get() in pizNombres):
+        elif not (combo_proveedor.get() in provs):
             messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
-            print(vehMatriculas)
-            print(combo_matricula.get())
             ventana.focus()
         else:
-            pizId = pizIDs[pizNombres.index(combo_pieza.get())]
-
-            idsTabla = getIdsFromTabla()
-            if len(idsTabla) == 0:
-                aux_detalle_rep_id = int(app.dbr.maxSQL("detalle_id", "detalle_reparacion")[0])
-            else:
-                aux_detalle_rep_id = max(int(app.dbr.maxSQL("detalle_id", "detalle_reparacion")[0]), max(idsTabla))
                 
             try:
-                piezasEnTabla = 0
-                for elemento in valoresTabla:
-                    if valoresTabla[elemento][2] == pizId:
-                        piezasEnTabla = piezasEnTabla + valoresTabla[elemento][3]
-
-                nuevaCantidadPieza = int(app.dbp.getCantidadPieza(pizId)[0]) - piezasEnTabla - int(entry_cantidad.get())
+                existencias_a_poner = int(entry_existencias.get())
+                precio_uni_a_poner = float(entry_precio_venta.get())
+                precio_ven_a_poner = float(entry_precio_uni.get())
+                maxDetalleId = app.dba.maxSQL("det_id", "det_articulo")[0]
+                if not maxDetalleId:
+                    aux_detalle_art_id = 1
+                else:
+                    aux_detalle_art_id = max(int(maxDetalleId), max(getIdsFromTabla())) + 1
+                
             except Exception as e:
                 messagebox.showerror("Cantidad inválida", "Favor de ingresar un número entero para la cantidad.")
                 print(e)
                 ventana.focus
                 return
             
-            if int(entry_cantidad.get()) <= 0:
+            if int(entry_existencias.get()) <= 0:
                 messagebox.showerror("Cantidad inválida", "Favor de ingresar un número entero positivo para la cantidad.")
                 ventana.focus()
                 return
 
-            if nuevaCantidadPieza < 0:
-                messagebox.showerror("Inventario no suficiente", "La pieza solicitada no cuenta con la existencia suficiente.")
-                print(piezasEnTabla)
-                print(int(app.dbp.getCantidadPieza(pizId)[0]))
-                print(nuevaCantidadPieza)
-
-                ventana.focus()
-                return
-            
-            tabla.insert('', 'end', values=(aux_detalle_rep_id + 1, int(entry_folio.get()), pizId, int(entry_cantidad.get())))
-            valoresAgregados.append([aux_detalle_rep_id + 1, int(entry_folio.get()), pizId, int(entry_cantidad.get())])
+            tabla.insert('', 'end', values=(aux_detalle_art_id, provs_ids[provs.index(combo_proveedor.get())], entry_id.get(), existencias_a_poner))
+            valoresAgregados.append([aux_detalle_art_id, provs_ids[provs.index(combo_proveedor.get())], entry_id.get(), entry_existencias.get()])
 
             valorInt = []
             for i in tabla.item(tabla.get_children()[len(tabla.get_children())-1], "values"):
@@ -1233,23 +1218,22 @@ def ventanaReparaciones(app: App):
         valoresAgregados.clear()
         valoresQuitados.clear()
         
-        maxFolio = app.dbr.maxSQL("folio", "reparaciones")[0]
-        if maxFolio == 0:
+        maxFolio = app.dba.maxSQL("articulo_id", "articulos")[0]
+        if not maxFolio:
             newFolio = 1
         else:
             newFolio = maxFolio + 1
         
-        entry_folio_buscar.delete(0, END)
-        entry_folio.config(state="normal")
-        entry_folio.delete(0, END)
-        entry_folio.insert(0, newFolio)
-        entry_folio.config(state="disabled")
-        combo_pieza.delete(0, END)
-        combo_matricula.delete(0, END)
-        entry_fecha_entrada.delete(0, END)
-        entry_fecha_salida.delete(0, END)
-        entry_cantidad.delete(0, END)
-        entry_usuario_id.delete(0, END)
+        entry_id_buscar.delete(0, END)
+        entry_id.config(state="normal")
+        entry_id.delete(0, END)
+        entry_id.insert(0, newFolio)
+        entry_id.config(state="disabled")
+        entry_descripcion.delete(0, END)
+        entry_precio_uni.delete(0, END)
+        entry_precio_venta.delete(0, END)
+        combo_proveedor.delete(0, END)
+        entry_existencias.delete(0, END)
 
         tabla.delete(*tabla.get_children())
 
@@ -1347,16 +1331,15 @@ def ventanaReparaciones(app: App):
 
         tabla.delete(*tabla.get_children())
 
-        entry_folio_buscar.delete(0, END)
-        entry_folio.config(state="normal")
-        entry_folio.delete(0, END)
-        entry_folio.config(state="disabled")
-        combo_pieza.delete(0, END)
-        combo_matricula.delete(0, END)
-        entry_fecha_entrada.delete(0, END)
-        entry_fecha_salida.delete(0, END)
-        entry_cantidad.delete(0, END)
-        entry_usuario_id.delete(0, END)
+        entry_id_buscar.delete(0, END)
+        entry_id.config(state="normal")
+        entry_id.delete(0, END)
+        entry_id.config(state="disabled")
+        entry_precio_uni.delete(0, END)
+        entry_precio_venta.delete(0, END)
+        combo_proveedor.delete(0, END)
+        entry_existencias.delete(0, END)
+        entry_descripcion.delete(0, END)
 
         btn_nuevo.config(state="normal")
         btn_cancelar.config(state="disabled")
@@ -1389,8 +1372,8 @@ def ventanaReparaciones(app: App):
                     cantPieza = int(valores[3])
                     nuevaCantidad = int(app.dbp.getCantidadPieza(idPieza)[0]) + cantPieza
                     actualizacion = app.dbp.actualizarCantPieza(idPieza, nuevaCantidad)
-                    ventanaReparaciones.valoresTabla = {}
-                    print(ventanaReparaciones.valoresTabla)
+                    ventanaArticulos.valoresTabla = {}
+                    print(ventanaArticulos.valoresTabla)
                     if not actualizacion:
                         messagebox.showerror("Eliminación fallida", "No ha sido posible actualizar las piezas.")
                         ventana.focus()
