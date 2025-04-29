@@ -3,10 +3,11 @@ from tkinter import END, Toplevel, messagebox, ttk
 
 import articulo as art
 import cliente as cli
+import compra as com
 import dbarticulos as dba
 import dbclientes as dbc
+import dbcompras as dbcom
 import dbproveedores as dbp
-import dbreparaciones as dbr
 import dbusuarios as dbu
 import proveedor as pro
 import reparacion as rep
@@ -82,6 +83,19 @@ class App(tk.Tk):
             self.menu_archivo.add_command(label="Clientes", command=lambda: ventanaClientes(self))
         else:
             self.menu_archivo.add_command(label="Clientes", command=lambda: ventanaClientes(self), state="disabled")
+            
+        self.menu_archivo.add_separator()
+        if userLogged.getPerfil() in ["Administrador", "Gerente"]:
+            self.menu_archivo.add_command(label="Compras", command=lambda: ventanaSeleccionarProveedor(self))
+        else:
+            self.menu_archivo.add_command(label="Compras", command=lambda: ventanaSeleccionarProveedor(self), state="disabled")
+            
+        self.menu_archivo.add_separator()
+        if userLogged.getPerfil() in perfiles:
+            self.menu_archivo.add_command(label="Ventas", command=lambda: ventanaVentas(self))
+        else:
+            self.menu_archivo.add_command(label="Ventas", command=lambda: ventanaVentas(self), state="disabled")
+            
         self.menu_archivo.add_separator()
         if userLogged.getPerfil() in ["Administrador"]:
             self.menu_archivo.add_command(label="Proveedores", command=lambda: ventanaProveedores(self))
@@ -103,7 +117,7 @@ class App(tk.Tk):
         self.dbc = dbc.dbclientes()
         self.dbp = dbp.dbproveedores()
         self.dba = dba.dbarticulos()
-        self.dbr = dbr.dbreparaciones()
+        self.dbcom = dbcom.dbcompras()
         
         def salir():
             self.destroy()
@@ -368,11 +382,6 @@ def ventanaClientes(app: App):
     btn_editar.pack(side="left", padx=5)
     btn_remover.pack(side="left", padx=5)
     
-    if app.userLogged.getPerfil() == "Administrador" or app.userLogged.getPerfil() == "Auxiliar":
-        btn_nuevo.config(state="normal")
-    else:
-        btn_nuevo.config(state="disabled")
-    
 
     def buttonBuscar_clicked():
         try:
@@ -519,199 +528,6 @@ def ventanaClientes(app: App):
                 
             else:
                 messagebox.showerror("Eliminación fallida", "No ha sido posible elimiar al cliente.")
-                ventana.focus()
-                
-        else:
-            ventana.focus()
-
-def ventanaArticulos1(app: App):
-    ventana = tk.Toplevel()
-    ventana.config(width=500, height=500, bg="black")
-    ventana.title("Articulos")
-    
-    label_id_buscar = tk.Label(ventana, text="Ingrese ID a buscar:", bg="black", fg="white")
-    label_id_buscar.place(x=30, y=10)
-    entry_id_buscar = tk.Entry(ventana, width=30)
-    entry_id_buscar.place(x=140, y=10)
-    btn_id_buscar = tk.Button(ventana, text="Buscar", command=lambda: buttonBuscar_clicked(), width=10)
-    btn_id_buscar.place(x=330, y=10)
-    
-    label_id = tk.Label(ventana, text="ID:", bg="black", fg="white")
-    label_id.place(x=30, y=50)
-    entry_id = tk.Entry(ventana, state="disabled")
-    entry_id.place(x=100, y=50)
-    
-    label_descripcion = tk.Label(ventana, text="Descripción:", bg="black", fg="white")
-    label_descripcion.place(x=30, y=80)
-    entry_descripcion = tk.Entry(ventana, width=50)
-    entry_descripcion.place(x=100, y=80)
-    
-    label_precio_uni = tk.Label(ventana, text="Precio Unitario:", bg="black", fg="white")
-    label_precio_uni.place(x=30, y=110)
-    entry_precio_uni = tk.Entry(ventana, width=30)
-    entry_precio_uni.place(x=100, y=110)
-    
-    label_precio_venta = tk.Label(ventana, text="Precio Venta:", bg="black", fg="white")
-    label_precio_venta.place(x=30, y=140)
-    entry_precio_venta = tk.Entry(ventana, width=30)
-    entry_precio_venta.place(x=100, y=140)
-    
-    frame_botones = tk.Frame(ventana, bg="black")
-    frame_botones.place(x=30, y=210)
-    
-    btn_nuevo = tk.Button(frame_botones, text="Nuevo", state="normal", command=lambda: buttonNuevo_clicked())
-    btn_guardar = tk.Button(frame_botones, text="Guardar", state="disabled", command=lambda: buttonGuardar_clicked())
-    btn_cancelar = tk.Button(frame_botones, text="Cancelar", state="disabled", command=lambda: buttonCancelar_clicked())
-    btn_editar = tk.Button(frame_botones, text="Editar", state="disabled", command=lambda: buttonEditar_clicked())
-    btn_remover = tk.Button(frame_botones, text="Remover", state="disabled", command=lambda: ventanaEliminarPieza())
-    
-    btn_nuevo.pack(side="left", padx=5)
-    btn_guardar.pack(side="left", padx=5)
-    btn_cancelar.pack(side="left", padx=5)
-    btn_editar.pack(side="left", padx=5)
-    btn_remover.pack(side="left", padx=5)
-    
-    def buttonBuscar_clicked():
-        try:
-            art_ = art.Articulo()
-            art_.set_id(int(entry_id_buscar.get()))
-            auxArt = app.dba.buscarArticulo(art_, [app.userLogged.getID(), app.userLogged.getPerfil()])
-            
-            
-            if auxArt:
-                entry_id.config(state="normal")
-                entry_id.delete(0, END)
-                entry_id.insert(0, auxArt.get_id())
-                entry_id.config(state="disabled")
-                entry_descripcion.delete(0, END)
-                entry_descripcion.insert(0, auxArt.get_descripcion())
-                entry_precio_uni.delete(0, END)
-                entry_precio_uni.insert(0, auxArt.get_precio_unitario())
-                entry_precio_venta.delete(0, END)
-                entry_precio_venta.insert(0, auxArt.get_precio_venta())
-
-                btn_cancelar.config(state="normal")
-                btn_editar.config(state="normal")
-                btn_remover.config(state="normal")
-
-                
-            else:
-                messagebox.showerror("Articulo no encontrado", "El articulo no se encuentra registrado en la DB.")
-                ventana.focus()
-            
-        except Exception as e:
-            messagebox.showerror("Valor no válido", "Favor de ingresar un número entero en el campo 'ID'.")
-            print(e)
-            ventana.focus()
-
-    def buttonGuardar_clicked():
-            if entry_descripcion.get() == "" or entry_id.get() == "" or entry_precio_uni.get() == "" or entry_precio_venta.get() == "":
-                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
-                ventana.focus()
-            
-            else:
-                auxArticulo= art.Articulo()
-                newID = int(entry_id.get())
-                if not newID:
-                    auxArticulo.set_id(1)
-                else:
-                    auxArticulo.set_id(newID)
-                    auxArticulo.set_descripcion(entry_descripcion.get())
-                    auxArticulo.set_precio_unitario(float(entry_precio_uni.get()))
-                    auxArticulo.set_precio_venta(float(entry_precio_venta.get()))
-                try:
-                    app.dba.guardarArticulo(auxArticulo)
-                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente el articulo con el ID {auxArticulo.get_id()}.")
-                    ventana.focus()
-                    
-                    entry_id.config(state="normal")
-                    entry_id.delete(0, END)
-                    entry_id.config(state="disabled")
-                    entry_descripcion.delete(0, END)
-                    entry_precio_uni.delete(0, END)
-                    entry_precio_uni.delete(0, END)
-                    entry_precio_venta.delete(0, END)
-                    entry_precio_venta.delete(0, END)
-                    btn_guardar.config(state="disabled")
-                    btn_nuevo.config(state="normal")
-                    
-                except Exception as e:
-                    messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
-                    print(e)
-    
-    def buttonNuevo_clicked():
-        btn_nuevo.config(state="disabled")
-
-        max = app.dba.maxSQL("articulo_id", "articulos")[0]
-        if max == None:
-            newID = 1
-        else:
-            newID = max + 1
-
-        entry_id.config(state="normal")
-        entry_id.insert(0, newID)
-        entry_id.config(state="disabled")
-        btn_guardar.config(state="normal")
-        
-    def buttonEditar_clicked():
-        try:
-            if entry_descripcion.get() == "" or entry_id.get() == "" or entry_precio_uni.get() == "" or entry_precio_venta.get() == "":
-                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para editar el registro.")
-                ventana.focus()
-
-            else:
-                auxArt = art.Articulo()
-                auxArt.set_id(int(entry_id.get()))
-                auxArt.set_descripcion(entry_descripcion.get())
-                auxArt.set_precio_unitario(float(entry_precio_uni.get()))
-                auxArt.set_precio_venta(float(entry_precio_venta.get()))
-                edicion = app.dba.editarArticulo(auxArt)
-                if edicion:
-                    messagebox.showinfo("Edición exitosa", "Se han editado correctamente los datos del articulo.")
-                    buttonCancelar_clicked()
-                    ventana.focus()
-                    
-                else:
-                    messagebox.showerror("Edición fallida", "No ha sido posible editar los datos del articulo.")
-                    ventana.focus()
-                
-        except Exception as e:
-            messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
-            ventana.focus()
-            print(e)
-
-    def buttonCancelar_clicked():
-        entry_id.config(state="normal")
-        entry_id.delete(0, END)
-        entry_id.config(state="disabled")
-        entry_id_buscar.delete(0, END)
-        entry_descripcion.delete(0, END)
-        entry_precio_uni.delete(0, END)
-        entry_precio_venta.delete(0, END)
-
-        #if app.userLogged.getPerfil() == "Administrador" or app.userLogged.getPerfil() == "Auxiliar":
-        #    btn_nuevo.config(state="normal")
-        #else:
-        #    btn_nuevo.config(state="disabled")
-
-        btn_nuevo.config(state="normal")
-        btn_cancelar.config(state="disabled")
-        btn_editar.config(state="disabled")
-        btn_remover.config(state="disabled")
-        
-    def ventanaEliminarPieza():
-        auxArt = art.Articulo()
-        auxArt.set_id(int(entry_id.get()))
-        
-        confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar el articulo con ID {auxArt.get_id()}?")
-        if confirmation:
-            if app.dba.eliminarArticulo(auxArt.get_id()):
-                messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente el articulo cliente con ID {auxArt.get_id()}.")
-                buttonCancelar_clicked()
-                ventana.focus()
-                
-            else:
-                messagebox.showerror("Eliminación fallida", "No ha sido posible elimiar el articulo.")
                 ventana.focus()
                 
         else:
@@ -907,26 +723,20 @@ def ventanaProveedores(app: App):
         else:
             ventana.focus()
 
-
-global valoresTabla
-global valoresQuitados
-global valoresAgregados
-valoresTabla = {}
-valoresQuitados = []
-valoresAgregados = []
-
 def ventanaArticulos(app: App):
     ventana = tk.Toplevel()
     ventana.config(width=600, height=600, bg="black")
     ventana.title("Articulos")
     
+    valoresTabla = {}
+    valoresQuitados = []
+    valoresAgregados = []
+    
+    
     isAdmin = app.userLogged.getPerfil() == "Administrador"
     provsProvIDs = app.dbp.dictProvIDs()
     articsArtIDs = app.dba.dictArtIDs()
     
-    pizNombres = []
-    pizIDs = []
-    pizCants = []
     
     provs = []
     provs_ids = []
@@ -1002,7 +812,7 @@ def ventanaArticulos(app: App):
     btn_guardar = tk.Button(frame_botones2, text="Guardar", state="disabled", command=lambda: buttonGuardar_clicked())
     btn_cancelar = tk.Button(frame_botones2, text="Cancelar", state="disabled", command=lambda: buttonCancelar_clicked())
     btn_editar = tk.Button(frame_botones2, text="Editar", state="disabled", command=lambda: buttonEditar_clicked())
-    btn_remover = tk.Button(frame_botones2, text="Remover", state="disabled", command=lambda: ventanaEliminarReparacion())
+    btn_remover = tk.Button(frame_botones2, text="Remover", state="disabled", command=lambda: ventanaEliminarArticulo())
     
     btn_agregar.pack(side="right", padx=5)
     btn_quitar.pack(side="right", padx=5)
@@ -1034,7 +844,7 @@ def ventanaArticulos(app: App):
                     if not maxDetalleId:
                         aux_detalle_art_id = 1
                     else:
-                        aux_detalle_art_id = maxDetalleId
+                        aux_detalle_art_id = maxDetalleId + 1
                 else:
                     if not maxDetalleId:
                         aux_detalle_art_id = max(getIdsFromTabla()) + 1
@@ -1064,10 +874,6 @@ def ventanaArticulos(app: App):
 
     def buttonQuitar_clicked(seleccion: ttk.Treeview.selection):
 
-        global valoresTabla
-        global valoresQuitados
-        global valoresAgregados
-
         if not seleccion:
             messagebox.showerror("Sin selección", "No hay ningún elemento de la tabla seleccionado.")
             return
@@ -1079,7 +885,8 @@ def ventanaArticulos(app: App):
         valores = list(valores)
         
         valoresTabla.pop(seleccion[0])
-        print(valoresTabla)
+        valoresQuitados.append(valores)
+        print(valoresQuitados)
 
         for i in range(len(valores)):
             valores[i] = int(valores[i])
@@ -1088,28 +895,26 @@ def ventanaArticulos(app: App):
         tabla.delete(seleccion[0])
 
     def buttonBuscar_clicked():
-        global valoresTabla
         try:
-            rep_ = rep.Reparacion()
-            rep_.setFolio(entry_folio_buscar.get())
-            auxRep = app.dbr.buscarReparacion(rep_, [app.userLogged.getID(), app.userLogged.getPerfil()])
-            if auxRep:
+            art_ = art.Articulo()
+            art_.set_id(entry_id_buscar.get())
+            auxArt = app.dba.buscarArticulo(art_, [app.userLogged.getID(), app.userLogged.getPerfil()])
+            if auxArt:
 
-                valoresQuitados = []
-                valoresTabla = {}
+                valoresTabla.clear()
 
-                entry_folio.config(state="normal")
-                entry_folio.delete(0, END)
-                entry_folio.insert(0, auxRep.getFolio())
-                entry_folio.config(state="disabled")
-                combo_pieza.delete(0, END)
-                combo_matricula.delete(0, END)
-                combo_matricula.insert(0, auxRep.getMatricula())
-                entry_fecha_entrada.delete(0, END)
-                entry_fecha_entrada.insert(0, auxRep.getFechaEntrada())
-                entry_fecha_salida.delete(0, END)
-                entry_fecha_salida.insert(0, auxRep.getFechaSalida())
-                entry_cantidad.delete(0, END)
+                entry_id.config(state="normal")
+                entry_id.delete(0, END)
+                entry_id.insert(0, auxArt.get_id())
+                entry_id.config(state="disabled")
+                combo_proveedor.delete(0, END)
+                entry_descripcion.delete(0, END)
+                entry_descripcion.insert(0, auxArt.get_descripcion())
+                entry_precio_uni.delete(0, END)
+                entry_precio_uni.insert(0, auxArt.get_precio_unitario())
+                entry_precio_venta.delete(0, END)
+                entry_precio_venta.insert(0, auxArt.get_precio_venta())
+                entry_existencias.delete(0, END)
 
                 if app.userLogged.getPerfil()=="Administrador":
                     btn_agregar.config(state="normal")
@@ -1119,9 +924,9 @@ def ventanaArticulos(app: App):
 
                 btn_cancelar.config(state="normal")
 
-                detalles_reparacion = app.dbr.detallesRep(auxRep.getFolio())
+                detalles_articulo = app.dba.detallesArt(auxArt.get_id())
 
-                for detalle in detalles_reparacion:
+                for detalle in detalles_articulo:
                     tabla.insert('', 'end', values=detalle)
                     indiceTabla = tabla.get_children()[len(tabla.get_children())-1]
                     valores = tabla.item(tabla.get_children()[len(tabla.get_children())-1], "values")
@@ -1130,10 +935,10 @@ def ventanaArticulos(app: App):
                 print(valoresTabla)
 
             else:
-                messagebox.showerror("Reparación no encontrada", "La reparación no se encuentra registrada en la DB.")
+                messagebox.showerror("Articulo no encontrado", "El articulo no se encuentra registrada en la DB.")
                 ventana.focus()
         except Exception as e:
-            messagebox.showerror("Valor no válido", "Favor de ingresar un folio válido.")
+            messagebox.showerror("Valor no válido", "Favor de ingresar un ID válido.")
             print(e)
             ventana.focus()
 
@@ -1182,7 +987,7 @@ def ventanaArticulos(app: App):
                     app.dba.guardarDetalleArticulo(valor)
 
                         
-                messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la reparación con el ID {auxArticulo.get_id()}.")
+                messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente el articulo con el ID {auxArticulo.get_id()}.")
                 
                 valoresTabla.clear()
                 print(valoresTabla)
@@ -1210,8 +1015,6 @@ def ventanaArticulos(app: App):
                 messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
                 print(e)
 
-        
-    
     def buttonNuevo_clicked():
 
         valoresTabla.clear()
@@ -1244,70 +1047,53 @@ def ventanaArticulos(app: App):
         btn_quitar.config(state="normal")
         
     def buttonEditar_clicked():
-        rep_ = rep.Reparacion()
-        rep_.setFolio(int(entry_folio.get()))
-        rep_.setMatricula(combo_matricula.get())
+        art_ = art.Articulo()
+        art_.set_id(int(entry_id.get()))
 
         #if not app.dbr.buscarReparacionMatricula(rep_, [app.userLogged.getID(), app.userLogged.getPerfil()]):
         elementosTabla = tabla.get_children()
 
         
-        if entry_folio.get() == "" or combo_matricula.get() == "" or entry_fecha_entrada.get() == "" or entry_fecha_salida.get() == "":
+        if entry_descripcion.get() == "" or entry_precio_uni.get() == "" or entry_precio_venta.get() == "":
             messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
-            ventana.focus()
-            
-        elif not (combo_matricula.get() in vehMatriculas) or (not(combo_pieza.get() in pizNombres) and (combo_pieza.get() != "")):
-            messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
             ventana.focus()
 
         elif len(elementosTabla) == 0:
-            messagebox.showerror("Reparacion sin detalles", "Favor de ingresar detalles de la reparación (piezas y cantidades).")
+            messagebox.showerror("Artiuclo sin detalles", "Favor de ingresar detalles del articulo.")
             ventana.focus()
         
         else:
-            auxReparacion= rep.Reparacion()
-            auxReparacion.setFolio(int(entry_folio.get()))
-            auxReparacion.setMatricula(combo_matricula.get())
-            auxReparacion.setFechaEntrada(entry_fecha_entrada.get())
-            auxReparacion.setFechaSalida(entry_fecha_salida.get())
-            auxReparacion.setUsuarioID(int(entry_usuario_id.get()))
+            auxArticulo= art.Articulo()
+            auxArticulo.set_id(int(entry_id.get()))
+            auxArticulo.set_descripcion(entry_descripcion.get())
+            auxArticulo.set_precio_unitario(int(entry_precio_uni.get()))
+            auxArticulo.set_precio_venta(int(entry_precio_venta.get()))
             try:
-                app.dbr.editarReparacion(auxReparacion)
+                app.dba.editarArticulo(auxArticulo)
                 ventana.focus()
 
                 for valor in valoresAgregados:
-                    pizId = valor[2]
-                    pizCant = valor[3]
-                    pizCantActual = int(app.dbp.getCantidadPieza(pizId)[0])
-                    app.dbp.actualizarCantPieza(pizId, pizCantActual-pizCant)
-                    app.dbr.guardarDetalleReparacion(valor)
+                    app.dba.guardarDetalleArticulo(valor)
 
                 for valor in valoresQuitados:
-                    pizId = valor[2]
-                    pizCant = valor[3]
-                    pizCantActual = int(app.dbp.getCantidadPieza(pizId)[0])
-                    app.dbp.actualizarCantPieza(pizId, pizCantActual+pizCant)
-                    app.dbr.eliminarDetalleReparacion(valor[0])
+                    app.dba.eliminarDetalleArticulo(valor[0])
 
-
-                        
-                messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la reparación con el folio matricula {auxReparacion.getFolio()}. Se registra bajo el username {app.userLogged.getUsername()}")
+                messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente el articulo con el ID {auxArticulo.get_id()}.")
                 
                 valoresTabla.clear()
                 print(valoresTabla)
                 valoresAgregados.clear()
                 valoresQuitados.clear()
                 tabla.delete(*tabla.get_children())
-                entry_folio_buscar.delete(0, END)
-                entry_folio.config(state="normal")
-                entry_folio.delete(0, END)
-                entry_folio.config(state="disabled")
-                combo_pieza.delete(0, END)
-                combo_matricula.delete(0, END)
-                entry_fecha_entrada.delete(0, END)
-                entry_fecha_salida.delete(0, END)
-                entry_cantidad.delete(0, END)
-                entry_usuario_id.delete(0, END)
+                entry_id_buscar.delete(0, END)
+                entry_id.config(state="normal")
+                entry_id.delete(0, END)
+                entry_id.config(state="disabled")
+                combo_proveedor.delete(0, END)
+                entry_descripcion.delete(0, END)
+                entry_existencias.delete(0, END)
+                entry_precio_uni.delete(0, END)
+                entry_precio_venta.delete(0, END)
                 btn_nuevo.config(state="normal")
                 btn_cancelar.config(state="disabled")
                 btn_editar.config(state="disabled")
@@ -1358,47 +1144,32 @@ def ventanaArticulos(app: App):
             idsList.append(int(valores[0]))
         return idsList
 
-    def ventanaEliminarReparacion():
-        auxRep = rep.Reparacion()
-        auxRep.setFolio(int(entry_folio.get()))
+    def ventanaEliminarArticulo():
+        auxArt = art.Articulo()
+        auxArt.set_id(int(entry_id.get()))
         
-        confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar la reparación con folio {auxRep.getFolio()} y todos sus detalles?")
+        confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar el articulo con id {auxArt.get_id()} y todos sus detalles?")
         if confirmation:
-            if app.dbr.eliminarReparacion(auxRep.getFolio()):
-                messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente la reparación con folio {auxRep.getFolio()}.")
-                elementos = tabla.get_children()
-                for elemento in elementos:
-                    valores = tabla.item(elemento, "values")
-                    idPieza = int(valores[2])
-                    cantPieza = int(valores[3])
-                    nuevaCantidad = int(app.dbp.getCantidadPieza(idPieza)[0]) + cantPieza
-                    actualizacion = app.dbp.actualizarCantPieza(idPieza, nuevaCantidad)
-                    ventanaArticulos.valoresTabla = {}
-                    print(ventanaArticulos.valoresTabla)
-                    if not actualizacion:
-                        messagebox.showerror("Eliminación fallida", "No ha sido posible actualizar las piezas.")
-                        ventana.focus()
-                        return
+            if app.dba.eliminarArticulo(auxArt.get_id()):
+                messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente el articulo con ID {auxArt.get_id()}.")
                 ventana.focus()
 
                 valoresTabla.clear()
-                print(valoresTabla)
 
                 valoresAgregados.clear()
                 valoresQuitados.clear()
 
                 tabla.delete(*tabla.get_children())
 
-                entry_folio_buscar.delete(0, END)
-                entry_folio.config(state="normal")
-                entry_folio.delete(0, END)
-                entry_folio.config(state="disabled")
-                combo_pieza.delete(0, END)
-                combo_matricula.delete(0, END)
-                entry_fecha_entrada.delete(0, END)
-                entry_fecha_salida.delete(0, END)
-                entry_cantidad.delete(0, END)
-                entry_usuario_id.delete(0, END)
+                entry_id_buscar.delete(0, END)
+                entry_id.config(state="normal")
+                entry_id.delete(0, END)
+                entry_id.config(state="disabled")
+                combo_proveedor.delete(0, END)
+                entry_descripcion.delete(0, END)
+                entry_existencias.delete(0, END)
+                entry_precio_uni.delete(0, END)
+                entry_precio_venta.delete(0, END)
 
                 btn_nuevo.config(state="normal")
                 btn_cancelar.config(state="disabled")
@@ -1414,6 +1185,978 @@ def ventanaArticulos(app: App):
         else:
             ventana.focus()
 
+def ventanaSeleccionarProveedor(app: App):
+    ventana = tk.Toplevel()
+    ventana.config(width=500, height=100, bg="black")
+    ventana.title("Selecciona proveedor")
+    
+    provsProvIDs = app.dbp.dictProvIDs()
+    
+    proveedores = []
+    proveedores_ids = []
+    for prov in provsProvIDs:
+        proveedores.append(prov[0])
+        proveedores_ids.append(int(prov[1]))
+    
+    label_seleccion = tk.Label(ventana, text="Proveedor:", bg="black", fg="white")
+    label_seleccion.place(x=30, y=10)
+    combo_seleccion = ttk.Combobox(ventana, values=proveedores, width=30)
+    combo_seleccion.place(x=115, y=10)
+    
+    btn_seleccionar = tk.Button(ventana, text="Buscar", command=lambda: seleccion(), width=10)
+    btn_seleccionar.place(x=355, y=10)
+    
+    def seleccion():
+        if (combo_seleccion.get() == "") or (not combo_seleccion.get() in proveedores):
+            messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
+            ventana.focus()
+        else:
+            id_proveedor = proveedores_ids[proveedores.index(combo_seleccion.get())]
+            proveedor_pasar = [int(id_proveedor), combo_seleccion.get()]
+            ventana.destroy()
+            ventanaCompras(proveedor_pasar)
+
+    def ventanaCompras(proveedor: list):
+        ventana = tk.Toplevel()
+        ventana.config(width=600, height=600, bg="black")
+        ventana.title("Compras")
+        
+        valoresTabla = {}
+        valoresQuitados = []
+        valoresAgregados = []
+        
+        
+        isAdmin = app.userLogged.getPerfil() == "Administrador"
+        #provsProvIDs = app.dbp.dictProvIDs()
+        articsArtIDs = app.dba.dictArtIDsFromProveedor(proveedor[0])
+        
+        
+        #provs = []
+        #provs_ids = []
+        #for prov in provsProvIDs:
+        #    provs.append(prov[0])
+        #    provs_ids.append(int(prov[1]))
+            
+        arts = []
+        arts_ids = []
+        for i in articsArtIDs:
+            arts.append(i[0])
+            arts_ids.append(int(i[1]))
+
+        #vehMatriculas = []
+        #valoresMatriculas = app.dbv.vehMatriculas(app.userLogged.getID(), True)
+        #for valor in valoresMatriculas:
+        #    vehMatriculas.append(valor[0])
+
+        label_folio_buscar = tk.Label(ventana, text="Ingrese ID a buscar:", bg="black", fg="white")
+        label_folio_buscar.place(x=30, y=10)
+        entry_folio_buscar = tk.Entry(ventana, width=30)
+        entry_folio_buscar.place(x=180, y=10)
+        btn_id_buscar = tk.Button(ventana, text="Buscar", command=lambda: buttonBuscar_clicked(), width=10)
+        btn_id_buscar.place(x=370, y=10)
+        
+        
+        label_folio = tk.Label(ventana, text="Folio:", bg="black", fg="white")
+        label_folio.place(x=30, y=50)
+        entry_folio = tk.Entry(ventana, state="disabled")
+        entry_folio.place(x=115, y=50)
+        
+        label_fecha = tk.Label(ventana, text="Fecha:", bg="black", fg="white")
+        label_fecha.place(x=30, y=80)
+        entry_fecha = tk.Entry(ventana, width=30)
+        entry_fecha.place(x=115, y=80)
+
+        label_proveedor = tk.Label(ventana, text="Proveedor:", bg="black", fg="white")
+        label_proveedor.place(x=30, y=110)
+        combo_proveedor = tk.Entry(ventana, width=30, state="disabled")
+        combo_proveedor.place(x=115, y=110)
+        
+        label_cantidad = tk.Label(ventana, text="Cantidad:", bg="black", fg="white")
+        label_cantidad.place(x=30, y=140)
+        entry_cantidad = tk.Entry(ventana, width=30)
+        entry_cantidad.place(x=115, y=140)
+
+        label_articulo = tk.Label(ventana, text="Articulo:", bg="black", fg="white")
+        label_articulo.place(x=30, y=170)
+        combo_articulo = ttk.Combobox(ventana, values=arts, width=30)
+        combo_articulo.place(x=115, y=170)
+        
+        frame_botones1 = tk.Frame(ventana, bg="black")
+        frame_botones1.place(x=30, y=270)
+
+        columnas = ["Índice", "Folio", "Cantidad", "Articulo ID"]
+        
+        tabla = ttk.Treeview(ventana, columns=columnas, show="headings")
+        for columna in columnas:
+            tabla.heading(columna, text=columna)
+            tabla.column(columna, width=10, stretch=tk.YES)
+
+        tabla.place(x=30, y=300, width=500, height=150)
+
+        frame_botones2 = tk.Frame(ventana, bg="black")
+        frame_botones2.place(x=30, y=500)
+        
+        btn_agregar = tk.Button(frame_botones1, text="Agregar", state="disabled", command=lambda: buttonAgregar_clicked())
+        btn_quitar = tk.Button(frame_botones1, text="Quitar", state="disabled", command=lambda: buttonQuitar_clicked(tabla.selection()))
+        
+        btn_nuevo = tk.Button(frame_botones2, text="Nuevo", state="normal", command=lambda: buttonNuevo_clicked())
+        btn_guardar = tk.Button(frame_botones2, text="Guardar", state="disabled", command=lambda: buttonGuardar_clicked())
+        btn_cancelar = tk.Button(frame_botones2, text="Cancelar", state="disabled", command=lambda: buttonCancelar_clicked())
+        btn_editar = tk.Button(frame_botones2, text="Editar", state="disabled", command=lambda: buttonEditar_clicked())
+        btn_remover = tk.Button(frame_botones2, text="Remover", state="disabled", command=lambda: ventanaEliminarCompra())
+        
+        btn_agregar.pack(side="right", padx=5)
+        btn_quitar.pack(side="right", padx=5)
+        btn_nuevo.pack(side="left", padx=5)
+        btn_guardar.pack(side="left", padx=5)
+        btn_cancelar.pack(side="left", padx=5)
+        btn_editar.pack(side="left", padx=5)
+        btn_remover.pack(side="left", padx=5)
+        
+        def buttonAgregar_clicked():
+            
+            if entry_folio.get() == "" or entry_fecha.get() == "" or entry_cantidad.get() == "" or combo_articulo.get() == "" or combo_proveedor.get() == "":
+                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para agregar el registro.")
+                ventana.focus()
+            elif not (combo_articulo.get() in arts):
+                messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
+                ventana.focus()
+            else:
+                try:
+                    existencias_a_poner = int(entry_cantidad.get())
+                    maxDetalleId = app.dbcom.maxSQL("det_id", "det_compra")[0]
+                    
+                    if len(getIdsFromTabla()) == 0:
+                        if not maxDetalleId:
+                            aux_detalle_com_id = 1
+                        else:
+                            aux_detalle_com_id = maxDetalleId + 1
+                    else:
+                        if not maxDetalleId:
+                            aux_detalle_com_id = max(getIdsFromTabla()) + 1
+                        else:
+                            aux_detalle_com_id = max(int(maxDetalleId), max(getIdsFromTabla())) + 1
+                    
+                except Exception as e:
+                    messagebox.showerror("Cantidad inválida", "Favor de ingresar un número entero para la cantidad.")
+                    print(e)
+                    ventana.focus
+                    return
+                
+                if int(entry_cantidad.get()) <= 0:
+                    messagebox.showerror("Cantidad inválida", "Favor de ingresar un número entero positivo para la cantidad.")
+                    ventana.focus()
+                    return
+
+                tabla.insert('', 'end', values=(aux_detalle_com_id, entry_folio.get(), existencias_a_poner, arts_ids[arts.index(combo_articulo.get())]))
+                valoresAgregados.append([aux_detalle_com_id, entry_folio.get(), existencias_a_poner, arts_ids[arts.index(combo_articulo.get())]])
+
+                valorInt = []
+                for i in tabla.item(tabla.get_children()[len(tabla.get_children())-1], "values"):
+                    valorInt.append(int(i))
+                
+                valoresTabla[tabla.get_children()[len(tabla.get_children())-1]] = valorInt
+                #print(valoresTabla)
+
+        def buttonQuitar_clicked(seleccion: ttk.Treeview.selection):
+
+            if not seleccion:
+                messagebox.showerror("Sin selección", "No hay ningún elemento de la tabla seleccionado.")
+                return
+            
+            valores = tabla.item(seleccion[0], "values")
+            #idArt = int(valores[2])
+            #cantPieza = int(valores[3])
+            #nuevaCantidad = int(app.dbp.getCantidadPieza(idArt)[0]) + cantPieza
+            valores = list(valores)
+            
+            valoresTabla.pop(seleccion[0])
+            valoresQuitados.append(valores)
+            print(valoresQuitados)
+
+            for i in range(len(valores)):
+                valores[i] = int(valores[i])
+
+            #valoresQuitados.append(valores)
+            tabla.delete(seleccion[0])
+
+        def buttonBuscar_clicked():
+            try:
+                com_ = com.Compra()
+                com_.set_folio(entry_folio_buscar.get())
+                auxCom = app.dbcom.buscarCompra(com_, [app.userLogged.getID(), app.userLogged.getPerfil()])
+                if auxCom:
+                    valoresTabla.clear()
+                    proveedoraux1 = pro.Proveedor()
+                    proveedoraux1.set_proveedor_id(auxCom.get_proveedor_id())
+                    proveedoraux2 = app.dbp.buscarProveedor(proveedoraux1)
+                    entry_folio.config(state="normal")
+                    entry_folio.delete(0, END)
+                    entry_folio.insert(0, auxCom.get_folio())
+                    entry_folio.config(state="disabled")
+                    combo_proveedor.delete(0, END)
+                    combo_proveedor.config(state="normal")
+                    combo_proveedor.delete(0, END)
+                    combo_proveedor.insert(0, proveedoraux2.get_nombre())
+                    combo_proveedor.config(state="disabled")
+                    entry_fecha.delete(0, END)
+                    entry_fecha.insert(0, auxCom.get_fecha())
+
+                    
+                    btn_nuevo.config(state="disabled")
+                    btn_agregar.config(state="normal")
+                    btn_quitar.config(state="normal")
+                    btn_editar.config(state="normal")
+                    btn_remover.config(state="normal")
+                    btn_cancelar.config(state="normal")
+
+                    detalles_compra = app.dbcom.detallesCom(auxCom.get_folio())
+
+                    for detalle in detalles_compra:
+                        tabla.insert('', 'end', values=detalle)
+                        indiceTabla = tabla.get_children()[len(tabla.get_children())-1]
+                        valores = tabla.item(tabla.get_children()[len(tabla.get_children())-1], "values")
+                        valoresTabla[indiceTabla] = valores
+                        
+                    print(valoresTabla)
+
+                else:
+                    messagebox.showerror("Compra no encontrada", "La copmpra no se encuentra registrada en la DB.")
+                    ventana.focus()
+            except Exception as e:
+                messagebox.showerror("Valor no válido", "Favor de ingresar un ID válido.")
+                print(e)
+                ventana.focus()
+
+        def buttonGuardar_clicked():
+            com_ = com.Compra()
+            com_.set_folio(int(entry_folio.get()))
+            com_.set_fecha(entry_fecha.get())
+            com_.set_proveedor_id(proveedor[0])
+            
+            elementosTabla = tabla.get_children()
+            valoresGuardadoTabla = []
+            for elemento in elementosTabla:
+                valor = tabla.item(elemento, "values")
+                valorInt = []
+                for columna in valor:
+                    columnaInt = int(columna)
+                    valorInt.append(columnaInt)
+                valoresGuardadoTabla.append(valorInt)
+
+            if entry_folio.get() == "" or entry_fecha.get() == "" or combo_proveedor.get() == "":
+                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
+                ventana.focus()
+
+            elif len(elementosTabla) == 0:
+                messagebox.showerror("Compra sin detalles", "Favor de ingresar detalles de la compra.")
+                ventana.focus()
+            
+            else:
+                auxCompra = com.Compra()
+                auxCompra.set_folio(int(entry_folio.get()))
+                auxCompra.set_fecha(entry_fecha.get())
+                auxCompra.set_proveedor_id(proveedor[0])
+                try:
+                    app.dbcom.guardarCompra(auxCompra)
+                    ventana.focus()
+
+                    for valor in valoresGuardadoTabla:
+                        artId = valor[3]
+                        artCant = valor[2]
+                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                        app.dbcom.guardarDetalleCompra(valor)
+
+                            
+                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la compra con el folio {auxCompra.get_folio()}.")
+                    
+                    valoresTabla.clear()
+                    print(valoresTabla)
+                    valoresAgregados.clear()
+                    valoresQuitados.clear()
+                    tabla.delete(*tabla.get_children())
+                    entry_folio_buscar.delete(0, END)
+                    entry_folio.config(state="normal")
+                    entry_folio.delete(0, END)
+                    entry_folio.config(state="disabled")
+                    combo_proveedor.delete(0, END)
+                    entry_fecha.delete(0, END)
+                    entry_cantidad.delete(0, END)
+                    btn_nuevo.config(state="normal")
+                    btn_cancelar.config(state="disabled")
+                    btn_editar.config(state="disabled")
+                    btn_remover.config(state="disabled")
+                    btn_guardar.config(state="disabled")
+                    btn_agregar.config(state="disabled")
+                    btn_quitar.config(state="disabled")
+                    
+                except Exception as e:
+                    messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
+                    print(e)
+
+        def buttonNuevo_clicked():
+
+            valoresTabla.clear()
+            print(valoresTabla)
+            valoresAgregados.clear()
+            valoresQuitados.clear()
+            
+            maxFolio = app.dbcom.maxSQL("folio", "compras")[0]
+            if not maxFolio:
+                newFolio = 1
+            else:
+                newFolio = maxFolio + 1
+            
+            entry_folio_buscar.delete(0, END)
+            entry_folio.config(state="normal")
+            entry_folio.delete(0, END)
+            entry_folio.insert(0, newFolio)
+            entry_folio.config(state="disabled")
+            entry_cantidad.delete(0, END)
+            entry_fecha.delete(0, END)
+            combo_articulo.delete(0, END)
+            combo_proveedor.config(state="normal")
+            combo_proveedor.delete(0, END)
+            combo_proveedor.insert(0, proveedor[1])
+            combo_proveedor.config(state="disabled")
+
+            tabla.delete(*tabla.get_children())
+
+            btn_guardar.config(state="normal")
+            btn_cancelar.config(state="normal")
+            btn_agregar.config(state="normal")
+            btn_quitar.config(state="normal")
+            
+        def buttonEditar_clicked():
+            com_ = com.Compra()
+            com_.set_folio(int(entry_folio.get()))
+
+            #if not app.dbr.buscarReparacionMatricula(rep_, [app.userLogged.getID(), app.userLogged.getPerfil()]):
+            elementosTabla = tabla.get_children()
+
+            
+            if entry_fecha.get() == "" or entry_cantidad.get() == "" or combo_proveedor.get() == "":
+                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
+                ventana.focus()
+
+            elif len(elementosTabla) == 0:
+                messagebox.showerror("Compra sin detalles", "Favor de ingresar detalles de la compra.")
+                ventana.focus()
+            
+            else:
+                auxCompra = com.Compra()
+                auxCompra.set_folio(int(entry_folio.get()))
+                auxCompra.set_fecha(entry_fecha.get())
+                auxCompra.set_proveedor_id(int(proveedores_ids[proveedores.index(combo_proveedor.get())]))
+                try:
+                    app.dbcom.editarCompra(auxCompra)
+                    ventana.focus()
+
+                    for valor in valoresAgregados:
+                        artId = valor[3]
+                        artCant = valor[2]
+                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                        app.dbcom.guardarDetalleCompra(valor)
+
+                    for valor in valoresQuitados:
+                        artId = valor[3]
+                        artCant = valor[2]
+                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                        app.dbcom.eliminarDetalleCompra(valor[0])
+
+                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la compra con el folio {auxCompra.get_folio()}.")
+                    
+                    valoresTabla.clear()
+                    print(valoresTabla)
+                    valoresAgregados.clear()
+                    valoresQuitados.clear()
+
+                    tabla.delete(*tabla.get_children())
+
+                    entry_folio_buscar.delete(0, END)
+                    entry_folio.config(state="normal")
+                    entry_folio.delete(0, END)
+                    entry_folio.config(state="disabled")
+                    entry_cantidad.delete(0, END)
+                    entry_fecha.delete(0, END)
+                    combo_proveedor.config(state="normal")
+                    combo_proveedor.delete(0, END)
+                    combo_proveedor.config(state="disabled")
+                    combo_articulo.delete(0, END)
+
+                    btn_nuevo.config(state="normal")
+                    btn_cancelar.config(state="disabled")
+                    btn_editar.config(state="disabled")
+                    btn_remover.config(state="disabled")
+                    btn_guardar.config(state="disabled")
+                    btn_agregar.config(state="disabled")
+                    btn_quitar.config(state="disabled")
+                    
+                except Exception as e:
+                    messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
+                    print(e)
+
+            #else:
+            #    messagebox.showerror("Folio existente con otra matricula", "El folio que se intenta guardar ya está guardado con otra matricula.")
+
+        def buttonCancelar_clicked():
+
+            valoresTabla.clear()
+            print(valoresTabla)
+            valoresAgregados.clear()
+            valoresQuitados.clear()
+
+            tabla.delete(*tabla.get_children())
+
+            entry_folio_buscar.delete(0, END)
+            entry_folio.config(state="normal")
+            entry_folio.delete(0, END)
+            entry_folio.config(state="disabled")
+            entry_cantidad.delete(0, END)
+            entry_fecha.delete(0, END)
+            combo_proveedor.config(state="normal")
+            combo_proveedor.delete(0, END)
+            combo_proveedor.config(state="disabled")
+            combo_articulo.delete(0, END)
+
+            btn_nuevo.config(state="normal")
+            btn_cancelar.config(state="disabled")
+            btn_editar.config(state="disabled")
+            btn_remover.config(state="disabled")
+            btn_guardar.config(state="disabled")
+            btn_agregar.config(state="disabled")
+            btn_quitar.config(state="disabled")
+
+        def getIdsFromTabla():
+            elementos = tabla.get_children()
+            idsList = []
+            for elemento in elementos:
+                valores = tabla.item(elemento, "values")
+                idsList.append(int(valores[0]))
+            return idsList
+
+        def ventanaEliminarCompra():
+            auxCom = com.Compra()
+            auxCom.set_folio(int(entry_folio.get()))
+            
+            confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar la compra con folio {auxCom.get_folio()} y todos sus detalles?")
+            if confirmation:
+                if app.dbcom.eliminarCompra(auxCom.get_folio()):
+                    messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente la compra con folio {auxCom.get_folio()}.")
+                    
+                    for valor in valoresTabla:
+                        valor2 = valoresTabla[valor]
+                        print(valor2)
+                        artId = int(valor2[3])
+                        artCant = int(valor2[2])
+                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                    
+                    ventana.focus()
+
+                    valoresTabla.clear()
+
+                    valoresAgregados.clear()
+                    valoresQuitados.clear()
+                    tabla.delete(*tabla.get_children())
+                    entry_folio_buscar.delete(0, END)
+                    entry_folio.config(state="normal")
+                    entry_folio.delete(0, END)
+                    entry_folio.config(state="disabled")
+                    entry_cantidad.delete(0, END)
+                    entry_fecha.delete(0, END)
+                    combo_proveedor.config(state="normal")
+                    combo_proveedor.delete(0, END)
+                    combo_proveedor.config(state="disabled")
+                    combo_articulo.delete(0, END)
+
+                    btn_nuevo.config(state="normal")
+                    btn_cancelar.config(state="disabled")
+                    btn_editar.config(state="disabled")
+                    btn_remover.config(state="disabled")
+                    btn_guardar.config(state="disabled")
+                    btn_agregar.config(state="disabled")
+                    btn_quitar.config(state="disabled")
+
+                else:
+                    messagebox.showerror("Eliminación fallida", "No ha sido posible eliminar la compra.")
+                    ventana.focus()
+            else:
+                ventana.focus()
+
+def ventanaVentas(app: App):
+        ventana = tk.Toplevel()
+        ventana.config(width=600, height=600, bg="black")
+        ventana.title("Compras")
+        
+        valoresTabla = {}
+        valoresQuitados = []
+        valoresAgregados = []
+        
+        
+        isAdmin = app.userLogged.getPerfil() == "Administrador"
+        #provsProvIDs = app.dbp.dictProvIDs()
+        articsArtIDs = app.dba.dictArtIDsFromProveedor(proveedor[0])
+        
+        
+        #provs = []
+        #provs_ids = []
+        #for prov in provsProvIDs:
+        #    provs.append(prov[0])
+        #    provs_ids.append(int(prov[1]))
+            
+        arts = []
+        arts_ids = []
+        for i in articsArtIDs:
+            arts.append(i[0])
+            arts_ids.append(int(i[1]))
+
+        #vehMatriculas = []
+        #valoresMatriculas = app.dbv.vehMatriculas(app.userLogged.getID(), True)
+        #for valor in valoresMatriculas:
+        #    vehMatriculas.append(valor[0])
+
+        label_folio_buscar = tk.Label(ventana, text="Ingrese ID a buscar:", bg="black", fg="white")
+        label_folio_buscar.place(x=30, y=10)
+        entry_folio_buscar = tk.Entry(ventana, width=30)
+        entry_folio_buscar.place(x=180, y=10)
+        btn_id_buscar = tk.Button(ventana, text="Buscar", command=lambda: buttonBuscar_clicked(), width=10)
+        btn_id_buscar.place(x=370, y=10)
+        
+        
+        label_folio = tk.Label(ventana, text="Folio:", bg="black", fg="white")
+        label_folio.place(x=30, y=50)
+        entry_folio = tk.Entry(ventana, state="disabled")
+        entry_folio.place(x=115, y=50)
+        
+        label_fecha = tk.Label(ventana, text="Fecha:", bg="black", fg="white")
+        label_fecha.place(x=30, y=80)
+        entry_fecha = tk.Entry(ventana, width=30)
+        entry_fecha.place(x=115, y=80)
+
+        label_proveedor = tk.Label(ventana, text="Proveedor:", bg="black", fg="white")
+        label_proveedor.place(x=30, y=110)
+        combo_proveedor = tk.Entry(ventana, width=30, state="disabled")
+        combo_proveedor.place(x=115, y=110)
+        
+        label_cantidad = tk.Label(ventana, text="Cantidad:", bg="black", fg="white")
+        label_cantidad.place(x=30, y=140)
+        entry_cantidad = tk.Entry(ventana, width=30)
+        entry_cantidad.place(x=115, y=140)
+
+        label_articulo = tk.Label(ventana, text="Articulo:", bg="black", fg="white")
+        label_articulo.place(x=30, y=170)
+        combo_articulo = ttk.Combobox(ventana, values=arts, width=30)
+        combo_articulo.place(x=115, y=170)
+        
+        frame_botones1 = tk.Frame(ventana, bg="black")
+        frame_botones1.place(x=30, y=270)
+
+        columnas = ["Índice", "Folio", "Cantidad", "Articulo ID"]
+        
+        tabla = ttk.Treeview(ventana, columns=columnas, show="headings")
+        for columna in columnas:
+            tabla.heading(columna, text=columna)
+            tabla.column(columna, width=10, stretch=tk.YES)
+
+        tabla.place(x=30, y=300, width=500, height=150)
+
+        frame_botones2 = tk.Frame(ventana, bg="black")
+        frame_botones2.place(x=30, y=500)
+        
+        btn_agregar = tk.Button(frame_botones1, text="Agregar", state="disabled", command=lambda: buttonAgregar_clicked())
+        btn_quitar = tk.Button(frame_botones1, text="Quitar", state="disabled", command=lambda: buttonQuitar_clicked(tabla.selection()))
+        
+        btn_nuevo = tk.Button(frame_botones2, text="Nuevo", state="normal", command=lambda: buttonNuevo_clicked())
+        btn_guardar = tk.Button(frame_botones2, text="Guardar", state="disabled", command=lambda: buttonGuardar_clicked())
+        btn_cancelar = tk.Button(frame_botones2, text="Cancelar", state="disabled", command=lambda: buttonCancelar_clicked())
+        btn_editar = tk.Button(frame_botones2, text="Editar", state="disabled", command=lambda: buttonEditar_clicked())
+        btn_remover = tk.Button(frame_botones2, text="Remover", state="disabled", command=lambda: ventanaEliminarCompra())
+        
+        btn_agregar.pack(side="right", padx=5)
+        btn_quitar.pack(side="right", padx=5)
+        btn_nuevo.pack(side="left", padx=5)
+        btn_guardar.pack(side="left", padx=5)
+        btn_cancelar.pack(side="left", padx=5)
+        btn_editar.pack(side="left", padx=5)
+        btn_remover.pack(side="left", padx=5)
+        
+        def buttonAgregar_clicked():
+            
+            if entry_folio.get() == "" or entry_fecha.get() == "" or entry_cantidad.get() == "" or combo_articulo.get() == "" or combo_proveedor.get() == "":
+                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para agregar el registro.")
+                ventana.focus()
+            elif not (combo_articulo.get() in arts):
+                messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
+                ventana.focus()
+            else:
+                try:
+                    existencias_a_poner = int(entry_cantidad.get())
+                    maxDetalleId = app.dbcom.maxSQL("det_id", "det_compra")[0]
+                    
+                    if len(getIdsFromTabla()) == 0:
+                        if not maxDetalleId:
+                            aux_detalle_com_id = 1
+                        else:
+                            aux_detalle_com_id = maxDetalleId + 1
+                    else:
+                        if not maxDetalleId:
+                            aux_detalle_com_id = max(getIdsFromTabla()) + 1
+                        else:
+                            aux_detalle_com_id = max(int(maxDetalleId), max(getIdsFromTabla())) + 1
+                    
+                except Exception as e:
+                    messagebox.showerror("Cantidad inválida", "Favor de ingresar un número entero para la cantidad.")
+                    print(e)
+                    ventana.focus
+                    return
+                
+                if int(entry_cantidad.get()) <= 0:
+                    messagebox.showerror("Cantidad inválida", "Favor de ingresar un número entero positivo para la cantidad.")
+                    ventana.focus()
+                    return
+
+                tabla.insert('', 'end', values=(aux_detalle_com_id, entry_folio.get(), existencias_a_poner, arts_ids[arts.index(combo_articulo.get())]))
+                valoresAgregados.append([aux_detalle_com_id, entry_folio.get(), existencias_a_poner, arts_ids[arts.index(combo_articulo.get())]])
+
+                valorInt = []
+                for i in tabla.item(tabla.get_children()[len(tabla.get_children())-1], "values"):
+                    valorInt.append(int(i))
+                
+                valoresTabla[tabla.get_children()[len(tabla.get_children())-1]] = valorInt
+                #print(valoresTabla)
+
+        def buttonQuitar_clicked(seleccion: ttk.Treeview.selection):
+
+            if not seleccion:
+                messagebox.showerror("Sin selección", "No hay ningún elemento de la tabla seleccionado.")
+                return
+            
+            valores = tabla.item(seleccion[0], "values")
+            #idArt = int(valores[2])
+            #cantPieza = int(valores[3])
+            #nuevaCantidad = int(app.dbp.getCantidadPieza(idArt)[0]) + cantPieza
+            valores = list(valores)
+            
+            valoresTabla.pop(seleccion[0])
+            valoresQuitados.append(valores)
+            print(valoresQuitados)
+
+            for i in range(len(valores)):
+                valores[i] = int(valores[i])
+
+            #valoresQuitados.append(valores)
+            tabla.delete(seleccion[0])
+
+        def buttonBuscar_clicked():
+            try:
+                com_ = com.Compra()
+                com_.set_folio(entry_folio_buscar.get())
+                auxCom = app.dbcom.buscarCompra(com_, [app.userLogged.getID(), app.userLogged.getPerfil()])
+                if auxCom:
+                    valoresTabla.clear()
+                    proveedoraux1 = pro.Proveedor()
+                    proveedoraux1.set_proveedor_id(auxCom.get_proveedor_id())
+                    proveedoraux2 = app.dbp.buscarProveedor(proveedoraux1)
+                    entry_folio.config(state="normal")
+                    entry_folio.delete(0, END)
+                    entry_folio.insert(0, auxCom.get_folio())
+                    entry_folio.config(state="disabled")
+                    combo_proveedor.delete(0, END)
+                    combo_proveedor.config(state="normal")
+                    combo_proveedor.delete(0, END)
+                    combo_proveedor.insert(0, proveedoraux2.get_nombre())
+                    combo_proveedor.config(state="disabled")
+                    entry_fecha.delete(0, END)
+                    entry_fecha.insert(0, auxCom.get_fecha())
+
+                    
+                    btn_nuevo.config(state="disabled")
+                    btn_agregar.config(state="normal")
+                    btn_quitar.config(state="normal")
+                    btn_editar.config(state="normal")
+                    btn_remover.config(state="normal")
+                    btn_cancelar.config(state="normal")
+
+                    detalles_compra = app.dbcom.detallesCom(auxCom.get_folio())
+
+                    for detalle in detalles_compra:
+                        tabla.insert('', 'end', values=detalle)
+                        indiceTabla = tabla.get_children()[len(tabla.get_children())-1]
+                        valores = tabla.item(tabla.get_children()[len(tabla.get_children())-1], "values")
+                        valoresTabla[indiceTabla] = valores
+                        
+                    print(valoresTabla)
+
+                else:
+                    messagebox.showerror("Compra no encontrada", "La copmpra no se encuentra registrada en la DB.")
+                    ventana.focus()
+            except Exception as e:
+                messagebox.showerror("Valor no válido", "Favor de ingresar un ID válido.")
+                print(e)
+                ventana.focus()
+
+        def buttonGuardar_clicked():
+            com_ = com.Compra()
+            com_.set_folio(int(entry_folio.get()))
+            com_.set_fecha(entry_fecha.get())
+            com_.set_proveedor_id(proveedor[0])
+            
+            elementosTabla = tabla.get_children()
+            valoresGuardadoTabla = []
+            for elemento in elementosTabla:
+                valor = tabla.item(elemento, "values")
+                valorInt = []
+                for columna in valor:
+                    columnaInt = int(columna)
+                    valorInt.append(columnaInt)
+                valoresGuardadoTabla.append(valorInt)
+
+            if entry_folio.get() == "" or entry_fecha.get() == "" or combo_proveedor.get() == "":
+                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
+                ventana.focus()
+
+            elif len(elementosTabla) == 0:
+                messagebox.showerror("Compra sin detalles", "Favor de ingresar detalles de la compra.")
+                ventana.focus()
+            
+            else:
+                auxCompra = com.Compra()
+                auxCompra.set_folio(int(entry_folio.get()))
+                auxCompra.set_fecha(entry_fecha.get())
+                auxCompra.set_proveedor_id(proveedor[0])
+                try:
+                    app.dbcom.guardarCompra(auxCompra)
+                    ventana.focus()
+
+                    for valor in valoresGuardadoTabla:
+                        artId = valor[3]
+                        artCant = valor[2]
+                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                        app.dbcom.guardarDetalleCompra(valor)
+
+                            
+                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la compra con el folio {auxCompra.get_folio()}.")
+                    
+                    valoresTabla.clear()
+                    print(valoresTabla)
+                    valoresAgregados.clear()
+                    valoresQuitados.clear()
+                    tabla.delete(*tabla.get_children())
+                    entry_folio_buscar.delete(0, END)
+                    entry_folio.config(state="normal")
+                    entry_folio.delete(0, END)
+                    entry_folio.config(state="disabled")
+                    combo_proveedor.delete(0, END)
+                    entry_fecha.delete(0, END)
+                    entry_cantidad.delete(0, END)
+                    btn_nuevo.config(state="normal")
+                    btn_cancelar.config(state="disabled")
+                    btn_editar.config(state="disabled")
+                    btn_remover.config(state="disabled")
+                    btn_guardar.config(state="disabled")
+                    btn_agregar.config(state="disabled")
+                    btn_quitar.config(state="disabled")
+                    
+                except Exception as e:
+                    messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
+                    print(e)
+
+        def buttonNuevo_clicked():
+
+            valoresTabla.clear()
+            print(valoresTabla)
+            valoresAgregados.clear()
+            valoresQuitados.clear()
+            
+            maxFolio = app.dbcom.maxSQL("folio", "compras")[0]
+            if not maxFolio:
+                newFolio = 1
+            else:
+                newFolio = maxFolio + 1
+            
+            entry_folio_buscar.delete(0, END)
+            entry_folio.config(state="normal")
+            entry_folio.delete(0, END)
+            entry_folio.insert(0, newFolio)
+            entry_folio.config(state="disabled")
+            entry_cantidad.delete(0, END)
+            entry_fecha.delete(0, END)
+            combo_articulo.delete(0, END)
+            combo_proveedor.config(state="normal")
+            combo_proveedor.delete(0, END)
+            combo_proveedor.insert(0, proveedor[1])
+            combo_proveedor.config(state="disabled")
+
+            tabla.delete(*tabla.get_children())
+
+            btn_guardar.config(state="normal")
+            btn_cancelar.config(state="normal")
+            btn_agregar.config(state="normal")
+            btn_quitar.config(state="normal")
+            
+        def buttonEditar_clicked():
+            com_ = com.Compra()
+            com_.set_folio(int(entry_folio.get()))
+
+            #if not app.dbr.buscarReparacionMatricula(rep_, [app.userLogged.getID(), app.userLogged.getPerfil()]):
+            elementosTabla = tabla.get_children()
+
+            
+            if entry_fecha.get() == "" or entry_cantidad.get() == "" or combo_proveedor.get() == "":
+                messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
+                ventana.focus()
+
+            elif len(elementosTabla) == 0:
+                messagebox.showerror("Compra sin detalles", "Favor de ingresar detalles de la compra.")
+                ventana.focus()
+            
+            else:
+                auxCompra = com.Compra()
+                auxCompra.set_folio(int(entry_folio.get()))
+                auxCompra.set_fecha(entry_fecha.get())
+                auxCompra.set_proveedor_id(int(proveedores_ids[proveedores.index(combo_proveedor.get())]))
+                try:
+                    app.dbcom.editarCompra(auxCompra)
+                    ventana.focus()
+
+                    for valor in valoresAgregados:
+                        artId = valor[3]
+                        artCant = valor[2]
+                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                        app.dbcom.guardarDetalleCompra(valor)
+
+                    for valor in valoresQuitados:
+                        artId = valor[3]
+                        artCant = valor[2]
+                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                        app.dbcom.eliminarDetalleCompra(valor[0])
+
+                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la compra con el folio {auxCompra.get_folio()}.")
+                    
+                    valoresTabla.clear()
+                    print(valoresTabla)
+                    valoresAgregados.clear()
+                    valoresQuitados.clear()
+
+                    tabla.delete(*tabla.get_children())
+
+                    entry_folio_buscar.delete(0, END)
+                    entry_folio.config(state="normal")
+                    entry_folio.delete(0, END)
+                    entry_folio.config(state="disabled")
+                    entry_cantidad.delete(0, END)
+                    entry_fecha.delete(0, END)
+                    combo_proveedor.config(state="normal")
+                    combo_proveedor.delete(0, END)
+                    combo_proveedor.config(state="disabled")
+                    combo_articulo.delete(0, END)
+
+                    btn_nuevo.config(state="normal")
+                    btn_cancelar.config(state="disabled")
+                    btn_editar.config(state="disabled")
+                    btn_remover.config(state="disabled")
+                    btn_guardar.config(state="disabled")
+                    btn_agregar.config(state="disabled")
+                    btn_quitar.config(state="disabled")
+                    
+                except Exception as e:
+                    messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
+                    print(e)
+
+            #else:
+            #    messagebox.showerror("Folio existente con otra matricula", "El folio que se intenta guardar ya está guardado con otra matricula.")
+
+        def buttonCancelar_clicked():
+
+            valoresTabla.clear()
+            print(valoresTabla)
+            valoresAgregados.clear()
+            valoresQuitados.clear()
+
+            tabla.delete(*tabla.get_children())
+
+            entry_folio_buscar.delete(0, END)
+            entry_folio.config(state="normal")
+            entry_folio.delete(0, END)
+            entry_folio.config(state="disabled")
+            entry_cantidad.delete(0, END)
+            entry_fecha.delete(0, END)
+            combo_proveedor.config(state="normal")
+            combo_proveedor.delete(0, END)
+            combo_proveedor.config(state="disabled")
+            combo_articulo.delete(0, END)
+
+            btn_nuevo.config(state="normal")
+            btn_cancelar.config(state="disabled")
+            btn_editar.config(state="disabled")
+            btn_remover.config(state="disabled")
+            btn_guardar.config(state="disabled")
+            btn_agregar.config(state="disabled")
+            btn_quitar.config(state="disabled")
+
+        def getIdsFromTabla():
+            elementos = tabla.get_children()
+            idsList = []
+            for elemento in elementos:
+                valores = tabla.item(elemento, "values")
+                idsList.append(int(valores[0]))
+            return idsList
+
+        def ventanaEliminarCompra():
+            auxCom = com.Compra()
+            auxCom.set_folio(int(entry_folio.get()))
+            
+            confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar la compra con folio {auxCom.get_folio()} y todos sus detalles?")
+            if confirmation:
+                if app.dbcom.eliminarCompra(auxCom.get_folio()):
+                    messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente la compra con folio {auxCom.get_folio()}.")
+                    
+                    for valor in valoresTabla:
+                        valor2 = valoresTabla[valor]
+                        print(valor2)
+                        artId = int(valor2[3])
+                        artCant = int(valor2[2])
+                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                    
+                    ventana.focus()
+
+                    valoresTabla.clear()
+
+                    valoresAgregados.clear()
+                    valoresQuitados.clear()
+                    tabla.delete(*tabla.get_children())
+                    entry_folio_buscar.delete(0, END)
+                    entry_folio.config(state="normal")
+                    entry_folio.delete(0, END)
+                    entry_folio.config(state="disabled")
+                    entry_cantidad.delete(0, END)
+                    entry_fecha.delete(0, END)
+                    combo_proveedor.config(state="normal")
+                    combo_proveedor.delete(0, END)
+                    combo_proveedor.config(state="disabled")
+                    combo_articulo.delete(0, END)
+
+                    btn_nuevo.config(state="normal")
+                    btn_cancelar.config(state="disabled")
+                    btn_editar.config(state="disabled")
+                    btn_remover.config(state="disabled")
+                    btn_guardar.config(state="disabled")
+                    btn_agregar.config(state="disabled")
+                    btn_quitar.config(state="disabled")
+
+                else:
+                    messagebox.showerror("Eliminación fallida", "No ha sido posible eliminar la compra.")
+                    ventana.focus()
+            else:
+                ventana.focus()
 
 login=Login()
 login.mainloop()

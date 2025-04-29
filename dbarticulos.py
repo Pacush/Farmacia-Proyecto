@@ -85,14 +85,28 @@ class dbarticulos:
         except Exception as e:
             print(e)
             return False
-
-    def actualizarCantArticulo(self, id: int, nuevaCantidad: int):
+        
+    def dictArtIDsFromProveedor(self, id_proveedor: int):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "UPDATE piezas SET existencia = %s WHERE pieza_id = %s;"
-            valores = (nuevaCantidad, id)
+            self.sql = "SELECT a.descripcion, a.articulo_id FROM articulos a JOIN det_articulo d ON a.articulo_id = d.articulo_id WHERE d.proveedor_id = %s"
+            valores = (id_proveedor, )
+            self.cursor1.execute(self.sql, valores)
+            rows = self.cursor1.fetchall()
+            return rows
+        except Exception as e:
+            print(e)
+            return False
+
+    def actualizarCantArticulo(self, proovedor_id: int, articulo_id: int, nuevaCantidad: int):
+        try:
+            self.con = con.conexion()
+            self.conn = self.con.open()
+            self.cursor1 = self.conn.cursor()
+            self.sql = "UPDATE det_articulo SET existencia = %s WHERE proveedor_id = %s AND articulo_id = %s;"
+            valores = (nuevaCantidad, proovedor_id, articulo_id)
             self.cursor1.execute(self.sql, valores)
             self.conn.commit()
             self.con.close()
@@ -101,16 +115,17 @@ class dbarticulos:
             print(e)
             return False
         
-    def getCantidadArticulo(self, id: int):
+    def getCantidadArticulo(self, articulo_id: int, proovedor_id: int):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "SELECT existencia FROM piezas WHERE pieza_id = %s"
-            valores = (id, )
+            self.sql = "SELECT existencia FROM det_articulo WHERE articulo_id = %s AND proveedor_id = %s;"
+            valores = (articulo_id, proovedor_id)
             self.cursor1.execute(self.sql, valores)
             rows = self.cursor1.fetchone()
             return rows
+    
         except Exception as e:
             print(e)
             return False
@@ -127,3 +142,35 @@ class dbarticulos:
         self.cursor1.execute(self.sql, self.datos)
         self.conn.commit()
         self.conn.close()
+        
+    def detallesArt(self, id: int):
+        try:
+            self.con = con.conexion()
+            self.conn = self.con.open()
+            self.cursor1 = self.conn.cursor()
+            self.sql = "SELECT * FROM det_articulo WHERE articulo_id = %s"
+            valores = (id,)
+            self.cursor1.execute(self.sql, valores)
+            rows = self.cursor1.fetchall()
+            return rows
+        except Exception as e:
+            print(e)
+            return False
+        
+    def eliminarDetalleArticulo(self, detalle_id: int):
+        try:
+            self.con = con.conexion()
+            self.conn = self.con.open()
+            self.cursor1 = self.conn.cursor()
+            self.sql = "DELETE FROM det_articulo WHERE det_id = %s"
+            valores = (detalle_id,)
+            self.cursor1.execute(self.sql, valores)
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        
+db = dbarticulos()
+
+print(int(db.getCantidadArticulo(1, 1)[0]))

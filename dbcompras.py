@@ -1,19 +1,17 @@
-import cliente as cli
+import compra as com
 import conexion as con
+import detalle_compra as det_com
 
 
-class dbclientes:
-    def guardarCliente(self, cli: cli.Cliente):
+class dbcompras:
+    def guardarCompra(self, com: com.Compra):
         self.con = con.conexion()
         self.conn = self.con.open()
         self.cursor1 = self.conn.cursor()
-        self.sql = "insert into clientes (cliente_id, usuario_id, nombre, rfc, direccion, puntos) values (%s, %s, %s, %s, %s)"
-        self.datos=(cli.getID(),
-                    cli.getUsuarioID(),
-                    cli.getNombre(),
-                    cli.getRfc(),
-                    cli.getDireccion(),
-                    0)
+        self.sql = "INSERT INTO compras (folio, fecha, proveedor_id) VALUES (%s, %s, %s)"
+        self.datos=(com.get_folio(),
+                    com.get_fecha(),
+                    com.get_proveedor_id())
         self.cursor1.execute(self.sql, self.datos)
         self.conn.commit()
         self.conn.close()
@@ -28,35 +26,29 @@ class dbclientes:
         self.con.close()
         return row
     
-    def buscarCliente(self, cli: cli.Cliente, usrLogged: list):
+    def buscarCompra(self, com: com.Compra, usrLogged: list = []):
         self.con = con.conexion()
         self.conn = self.con.open()
         self.cursor1 = self.conn.cursor()
-        if usrLogged[1] == "Administrador":
-            self.sql = "select * from clientes where cliente_id=%s"
-            self.datos=(cli.getID(),)
-        else:
-            self.sql = "select * from clientes where cliente_id=%s"
-            self.datos=(cli.getID())
+        self.sql = "SELECT * FROM compras WHERE folio=%s"
+        self.datos=(com.get_folio(), )
         self.cursor1.execute(self.sql, self.datos)
         aux = None
         row = self.cursor1.fetchone()
         if row is not None:
-            aux = cli
-            aux.setID(int(row[0]))
-            aux.setUsuarioID(int(row[4]))
-            aux.setNombre(row[1])
-            aux.setRfc(row[2])
-            aux.setDireccion(row[3])
+            aux = com
+            aux.set_folio(int(row[0]))
+            aux.set_fecha(row[1])
+            aux.set_proveedor_id(int(row[2]))
         return aux
     
-    def editarCliente(self, cli: cli.Cliente):
+    def editarCompra(self, com: com.Compra):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "UPDATE clientes SET nombre = %s, rfc = %s, direccion = %s WHERE cliente_id = %s"
-            valores = (cli.getNombre(), cli.getRfc(), cli.getDireccion(), cli.getID())
+            self.sql = "UPDATE compras SET fecha = %s, proveedor_id = %s WHERE folio = %s"
+            valores = (com.get_fecha(), com.get_proveedor_id(), com.get_folio())
             self.cursor1.execute(self.sql, valores)
             self.conn.commit()
             self.con.close()
@@ -65,48 +57,57 @@ class dbclientes:
             print(e)
             return False
         
-    def eliminarCliente(self, id: int):
+    def eliminarCompra(self, folio: int):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "DELETE FROM clientes WHERE cliente_id = %s"
-            valores = (id,)
+            self.sql = "DELETE FROM compras WHERE folio = %s"
+            valores = (folio,)
             self.cursor1.execute(self.sql, valores)
             self.conn.commit()
             return True
         except Exception as e:
             print(e)
             return False
+    
+    def guardarDetalleCompra(self, detalle_compra: list):
+        self.con = con.conexion()
+        self.conn = self.con.open()
+        self.cursor1 = self.conn.cursor()
+        self.sql = "INSERT INTO det_compra (det_id, folio, cantidad, articulo_id) VALUES (%s, %s, %s, %s)"
+        self.datos=(detalle_compra[0],
+                    detalle_compra[1],
+                    detalle_compra[2],
+                    detalle_compra[3])
+        self.cursor1.execute(self.sql, self.datos)
+        self.conn.commit()
+        self.conn.close()
         
-    def dictClientesId(self, usrLoggedId, isAdmin: bool = False):
+    def detallesCom(self, folio: int):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            if isAdmin:
-                self.sql = "SELECT cliente_id, nombre FROM clientes"
-                self.cursor1.execute(self.sql)
-            else:
-                self.sql = "SELECT cliente_id, nombre FROM clientes WHERE usuario_id = %s"
-                valores = (usrLoggedId,)
-                self.cursor1.execute(self.sql, valores)
+            self.sql = "SELECT * FROM det_compra WHERE folio = %s"
+            valores = (folio,)
+            self.cursor1.execute(self.sql, valores)
             rows = self.cursor1.fetchall()
             return rows
         except Exception as e:
             print(e)
             return False
-
-    def rfcsClientes(self):
+        
+    def eliminarDetalleCompra(self, detalle_id: int):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "SELECT rfc nombre FROM clientes"
-            #valores = (usrLoggedId,)
-            self.cursor1.execute(self.sql)
-            rows = self.cursor1.fetchall()
-            return rows
+            self.sql = "DELETE FROM det_compra WHERE det_id = %s"
+            valores = (detalle_id,)
+            self.cursor1.execute(self.sql, valores)
+            self.conn.commit()
+            return True
         except Exception as e:
             print(e)
-            return []
+            return False

@@ -5,6 +5,7 @@ class Cliente:
         self.nombre=""
         self.rfc=""
         self.direccion=""
+        self.puntos=0
 
     def setID(self, id):
         self.id=id
@@ -35,7 +36,10 @@ class Cliente:
 
     def getDireccion(self):
         return self.direccion
+    
+    def setPuntos(self, puntos):
+        self.puntos=puntos
 
-
-
+    def getPuntos(self):
+        return self.puntos
 
