@@ -157,6 +157,20 @@ class dbarticulos:
             print(e)
             return False
         
+    def getPrecioVenta(self, art_id: int):
+        try:
+            self.con = con.conexion()
+            self.conn = self.con.open()
+            self.cursor1 = self.conn.cursor()
+            self.sql = "SELECT precio_venta FROM articulos WHERE articulo_id = %s"
+            valores = (art_id,)
+            self.cursor1.execute(self.sql, valores)
+            rows = self.cursor1.fetchall()
+            return rows
+        except Exception as e:
+            print(e)
+            return False
+        
     def eliminarDetalleArticulo(self, detalle_id: int):
         try:
             self.con = con.conexion()

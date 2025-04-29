@@ -79,18 +79,13 @@ class dbclientes:
             print(e)
             return False
         
-    def dictClientesId(self, usrLoggedId, isAdmin: bool = False):
+    def dictClientesId(self):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            if isAdmin:
-                self.sql = "SELECT cliente_id, nombre FROM clientes"
-                self.cursor1.execute(self.sql)
-            else:
-                self.sql = "SELECT cliente_id, nombre FROM clientes WHERE usuario_id = %s"
-                valores = (usrLoggedId,)
-                self.cursor1.execute(self.sql, valores)
+            self.sql = "SELECT nombre, cliente_id FROM clientes"
+            self.cursor1.execute(self.sql)
             rows = self.cursor1.fetchall()
             return rows
         except Exception as e:
@@ -110,3 +105,33 @@ class dbclientes:
         except Exception as e:
             print(e)
             return []
+        
+    def getPuntos(self, cliente_id: int):
+        try:
+            self.con = con.conexion()
+            self.conn = self.con.open()
+            self.cursor1 = self.conn.cursor()
+            self.sql = "SELECT puntos FROM clientes WHERE cliente_id = %s"
+            valores = (cliente_id,)
+            self.cursor1.execute(self.sql, valores)
+            rows = self.cursor1.fetchall()
+            return rows
+        except Exception as e:
+            print(e)
+            return []
+        
+    def actualizarPuntos(self, cliente_id: int, nuevos_puntos: int):
+        try:
+            self.con = con.conexion()
+            self.conn = self.con.open()
+            self.cursor1 = self.conn.cursor()
+            self.sql = "UPDATE clientes SET puntos = %s WHERE cliente_id = %s"
+            valores = (nuevos_puntos, cliente_id)
+            self.cursor1.execute(self.sql, valores)
+            self.conn.commit()
+        except Exception as e:
+            print(e)
+        
+db = dbclientes()
+
+db.actualizarPuntos(1, 10)
