@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 09-04-2025 a las 19:53:03
--- Versión del servidor: 10.4.28-MariaDB
--- Versión de PHP: 8.2.4
+-- Host: 127.0.0.1:3307
+-- Generation Time: Apr 30, 2025 at 05:46 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.1.25
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `dbfarmacia`
+-- Database: `dbfarmacia`
 --
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `articulos`
+-- Table structure for table `articulos`
 --
 
 CREATE TABLE `articulos` (
@@ -34,23 +34,40 @@ CREATE TABLE `articulos` (
   `precio_venta` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `articulos`
+--
+
+INSERT INTO `articulos` (`articulo_id`, `descripcion`, `precio_unitario`, `precio_venta`) VALUES
+(1, 'asd', 12, 15),
+(2, 'Fanta', 12, 15);
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `clientes`
+-- Table structure for table `clientes`
 --
 
 CREATE TABLE `clientes` (
   `cliente_id` int(10) NOT NULL,
   `nombre` varchar(20) NOT NULL,
   `direccion` varchar(20) NOT NULL,
-  `rfc` varchar(20) NOT NULL
+  `rfc` varchar(20) NOT NULL,
+  `usuario_id` int(10) DEFAULT NULL,
+  `puntos` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `clientes`
+--
+
+INSERT INTO `clientes` (`cliente_id`, `nombre`, `direccion`, `rfc`, `usuario_id`, `puntos`) VALUES
+(1, 'Diego', '1234', '1234', 1, 13);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `compras`
+-- Table structure for table `compras`
 --
 
 CREATE TABLE `compras` (
@@ -59,10 +76,19 @@ CREATE TABLE `compras` (
   `proveedor_id` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `compras`
+--
+
+INSERT INTO `compras` (`folio`, `fecha`, `proveedor_id`) VALUES
+(1, 'sad', 2),
+(2, '12.12.12', 1),
+(3, '29.4.2225', 1);
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `det_articulo`
+-- Table structure for table `det_articulo`
 --
 
 CREATE TABLE `det_articulo` (
@@ -72,10 +98,20 @@ CREATE TABLE `det_articulo` (
   `existencia` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `det_articulo`
+--
+
+INSERT INTO `det_articulo` (`det_id`, `proveedor_id`, `articulo_id`, `existencia`) VALUES
+(1, 1, 1, 160),
+(3, 2, 1, 20),
+(4, 1, 2, 50),
+(6, 2, 2, 100);
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `det_compra`
+-- Table structure for table `det_compra`
 --
 
 CREATE TABLE `det_compra` (
@@ -85,10 +121,22 @@ CREATE TABLE `det_compra` (
   `articulo_id` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `det_compra`
+--
+
+INSERT INTO `det_compra` (`det_id`, `folio`, `cantidad`, `articulo_id`) VALUES
+(1, 1, 20, 1),
+(2, 1, 20, 2),
+(4, 2, 10, 1),
+(5, 2, 25, 2),
+(8, 3, 11, 1),
+(9, 3, 7, 2);
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `det_venta`
+-- Table structure for table `det_venta`
 --
 
 CREATE TABLE `det_venta` (
@@ -98,10 +146,26 @@ CREATE TABLE `det_venta` (
   `cantidad` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `det_venta`
+--
+
+INSERT INTO `det_venta` (`det_id`, `folio`, `articulo_id`, `cantidad`) VALUES
+(1, 1, 2, 2),
+(3, 2, 2, 4),
+(4, 2, 1, 3),
+(5, 3, 2, 5),
+(6, 3, 1, 3),
+(7, 4, 2, 4),
+(8, 5, 2, 5),
+(9, 6, 1, 6),
+(10, 7, 2, 7),
+(11, 8, 2, 8);
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `proveedores`
+-- Table structure for table `proveedores`
 --
 
 CREATE TABLE `proveedores` (
@@ -111,10 +175,18 @@ CREATE TABLE `proveedores` (
   `telefono` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `proveedores`
+--
+
+INSERT INTO `proveedores` (`proveedor_id`, `nombre`, `empresa`, `telefono`) VALUES
+(1, 'Coca', 'Coca', '123454'),
+(2, 'Pepsi', 'Pepsi', '12354');
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `usuarios`
+-- Table structure for table `usuarios`
 --
 
 CREATE TABLE `usuarios` (
@@ -126,10 +198,17 @@ CREATE TABLE `usuarios` (
   `perfil` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `usuarios`
+--
+
+INSERT INTO `usuarios` (`usuario_id`, `nombre`, `telefono`, `username`, `password`, `perfil`) VALUES
+(1, 'joss', '3333333333', 'joss', '1234', 'Administrador');
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `ventas`
+-- Table structure for table `ventas`
 --
 
 CREATE TABLE `ventas` (
@@ -139,30 +218,45 @@ CREATE TABLE `ventas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Índices para tablas volcadas
+-- Dumping data for table `ventas`
+--
+
+INSERT INTO `ventas` (`folio`, `fecha`, `cliente_id`) VALUES
+(1, '1', 1),
+(2, '2.2.2', 1),
+(3, '3.3.3', 1),
+(4, '4.4.4', 1),
+(5, '5', 1),
+(6, '666', 1),
+(7, '777', 1),
+(8, '888', 1);
+
+--
+-- Indexes for dumped tables
 --
 
 --
--- Indices de la tabla `articulos`
+-- Indexes for table `articulos`
 --
 ALTER TABLE `articulos`
   ADD PRIMARY KEY (`articulo_id`);
 
 --
--- Indices de la tabla `clientes`
+-- Indexes for table `clientes`
 --
 ALTER TABLE `clientes`
-  ADD PRIMARY KEY (`cliente_id`);
+  ADD PRIMARY KEY (`cliente_id`),
+  ADD KEY `cliente_usuarioid_fk` (`usuario_id`);
 
 --
--- Indices de la tabla `compras`
+-- Indexes for table `compras`
 --
 ALTER TABLE `compras`
   ADD PRIMARY KEY (`folio`),
   ADD KEY `compra_proveedor_fk` (`proveedor_id`);
 
 --
--- Indices de la tabla `det_articulo`
+-- Indexes for table `det_articulo`
 --
 ALTER TABLE `det_articulo`
   ADD PRIMARY KEY (`det_id`),
@@ -170,7 +264,7 @@ ALTER TABLE `det_articulo`
   ADD KEY `detalle_articulo_fk` (`articulo_id`);
 
 --
--- Indices de la tabla `det_compra`
+-- Indexes for table `det_compra`
 --
 ALTER TABLE `det_compra`
   ADD PRIMARY KEY (`det_id`),
@@ -178,7 +272,7 @@ ALTER TABLE `det_compra`
   ADD KEY `detalle_articulos_fk` (`articulo_id`);
 
 --
--- Indices de la tabla `det_venta`
+-- Indexes for table `det_venta`
 --
 ALTER TABLE `det_venta`
   ADD PRIMARY KEY (`det_id`),
@@ -186,57 +280,63 @@ ALTER TABLE `det_venta`
   ADD KEY `detalle_folio_fk` (`folio`);
 
 --
--- Indices de la tabla `proveedores`
+-- Indexes for table `proveedores`
 --
 ALTER TABLE `proveedores`
   ADD PRIMARY KEY (`proveedor_id`);
 
 --
--- Indices de la tabla `usuarios`
+-- Indexes for table `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`usuario_id`);
 
 --
--- Indices de la tabla `ventas`
+-- Indexes for table `ventas`
 --
 ALTER TABLE `ventas`
   ADD PRIMARY KEY (`folio`),
   ADD KEY `ventas_cliente_fk` (`cliente_id`);
 
 --
--- Restricciones para tablas volcadas
+-- Constraints for dumped tables
 --
 
 --
--- Filtros para la tabla `compras`
+-- Constraints for table `clientes`
+--
+ALTER TABLE `clientes`
+  ADD CONSTRAINT `cliente_usuarioid_fk` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`usuario_id`);
+
+--
+-- Constraints for table `compras`
 --
 ALTER TABLE `compras`
   ADD CONSTRAINT `compra_proveedor_fk` FOREIGN KEY (`proveedor_id`) REFERENCES `proveedores` (`proveedor_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `det_articulo`
+-- Constraints for table `det_articulo`
 --
 ALTER TABLE `det_articulo`
   ADD CONSTRAINT `detalle_articulo_fk` FOREIGN KEY (`articulo_id`) REFERENCES `articulos` (`articulo_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `detalle_proveedor_fk` FOREIGN KEY (`proveedor_id`) REFERENCES `proveedores` (`proveedor_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `det_compra`
+-- Constraints for table `det_compra`
 --
 ALTER TABLE `det_compra`
   ADD CONSTRAINT `detalle_articulos_fk` FOREIGN KEY (`articulo_id`) REFERENCES `articulos` (`articulo_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `detalle_foliocompras_id` FOREIGN KEY (`folio`) REFERENCES `compras` (`folio`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `det_venta`
+-- Constraints for table `det_venta`
 --
 ALTER TABLE `det_venta`
   ADD CONSTRAINT `detalle_folio_fk` FOREIGN KEY (`folio`) REFERENCES `ventas` (`folio`) ON DELETE CASCADE,
   ADD CONSTRAINT `detalleventa_articulos_fk` FOREIGN KEY (`articulo_id`) REFERENCES `articulos` (`articulo_id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `ventas`
+-- Constraints for table `ventas`
 --
 ALTER TABLE `ventas`
   ADD CONSTRAINT `ventas_cliente_fk` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`cliente_id`) ON DELETE CASCADE;
