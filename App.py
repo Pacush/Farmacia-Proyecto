@@ -1317,6 +1317,16 @@ def ventanaSeleccionarProveedor(app: App):
         
         def buttonAgregar_clicked():
             
+            cantidad_art_aux = int(entry_cantidad.get())
+            id_art_aux = arts_ids[arts.index(combo_articulo.get())]
+            
+            current_storage = app.dba.getCantidadArticulo(id_art_aux, proveedor[0])[0]
+            articles_in_table = sum(int(tabla.item(item, "values")[2]) for item in tabla.get_children() if int(tabla.item(item, "values")[3]) == id_art_aux)
+
+            if cantidad_art_aux > (current_storage - articles_in_table):
+                messagebox.showerror("Cantidad insuficiente", "No hay suficientes existencias del artículo seleccionado.")
+                return
+            
             if entry_folio.get() == "" or entry_fecha.get() == "" or entry_cantidad.get() == "" or combo_articulo.get() == "" or combo_proveedor.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para agregar el registro.")
                 ventana.focus()
@@ -1349,6 +1359,8 @@ def ventanaSeleccionarProveedor(app: App):
                     messagebox.showerror("Cantidad inválida", "Favor de ingresar un número entero positivo para la cantidad.")
                     ventana.focus()
                     return
+                
+                #if
 
                 tabla.insert('', 'end', values=(aux_detalle_com_id, entry_folio.get(), existencias_a_poner, arts_ids[arts.index(combo_articulo.get())]))
                 valoresAgregados.append([aux_detalle_com_id, entry_folio.get(), existencias_a_poner, arts_ids[arts.index(combo_articulo.get())]])
@@ -1446,7 +1458,6 @@ def ventanaSeleccionarProveedor(app: App):
                     valorInt.append(columnaInt)
                 valoresGuardadoTabla.append(valorInt)
 
-            asdasdasd
             
             if entry_folio.get() == "" or entry_fecha.get() == "" or combo_proveedor.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
@@ -1456,7 +1467,7 @@ def ventanaSeleccionarProveedor(app: App):
                 messagebox.showerror("Compra sin detalles", "Favor de ingresar detalles de la compra.")
                 ventana.focus()
                 
-            elif:
+            #elif :
                 
             
             else:
@@ -1472,7 +1483,9 @@ def ventanaSeleccionarProveedor(app: App):
                         artId = valor[3]
                         artCant = valor[2]
                         artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                        artCantActual2 = int(app.dba.getCantidadArticulo2(artId,)[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                        app.dba.actualizarCantArticulo2(artId, artCantActual2+artCant)
                         app.dbcom.guardarDetalleCompra(valor)
 
                             
@@ -1542,8 +1555,7 @@ def ventanaSeleccionarProveedor(app: App):
             #if not app.dbr.buscarReparacionMatricula(rep_, [app.userLogged.getID(), app.userLogged.getPerfil()]):
             elementosTabla = tabla.get_children()
 
-            
-            if entry_fecha.get() == "" or entry_cantidad.get() == "" or combo_proveedor.get() == "":
+            if entry_fecha.get() == "" or combo_proveedor.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
                 ventana.focus()
 
@@ -1564,15 +1576,20 @@ def ventanaSeleccionarProveedor(app: App):
                         artId = valor[3]
                         artCant = valor[2]
                         artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                        artCantActual2 = int(app.dba.getCantidadArticulo2(artId,)[0])
+                        app.dba.actualizarCantArticulo2(artId, artCantActual2+artCant)
+                        
                         app.dbcom.guardarDetalleCompra(valor)
 
                     for valor in valoresQuitados:
                         artId = valor[3]
                         artCant = valor[2]
                         artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
                         app.dbcom.eliminarDetalleCompra(valor[0])
+                        artCantActual2 = int(app.dba.getCantidadArticulo2(artId,)[0])
+                        app.dba.actualizarCantArticulo2(artId, artCantActual2-artCant)
 
                     messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la compra con el folio {auxCompra.get_folio()}.")
                     
@@ -1660,7 +1677,9 @@ def ventanaSeleccionarProveedor(app: App):
                         artId = int(valor2[3])
                         artCant = int(valor2[2])
                         artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                        artCantActual2 = int(app.dba.getCantidadArticulo2(artId,)[0])
+                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                        app.dba.actualizarCantArticulo2(artId, artCantActual2-artCant)
                     
                     ventana.focus()
 
@@ -1791,11 +1810,20 @@ def ventanaVentas(app: App):
         
         def buttonAgregar_clicked():
             
+            cantidad_art_aux = int(entry_cantidad.get())
+            id_art_aux = arts_ids[arts.index(combo_articulo.get())]
+            
+            current_storage = app.dba.getCantidadArticulo2(id_art_aux)[0]
+            articles_in_table = sum(int(tabla.item(item, "values")[2]) for item in tabla.get_children() if int(tabla.item(item, "values")[3]) == id_art_aux)
+
             if entry_folio.get() == "" or entry_fecha.get() == "" or combo_cliente.get() == "" or combo_articulo.get() == "" or entry_cantidad.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para agregar el registro.")
                 ventana.focus()
             elif not (combo_articulo.get() in arts) or not (combo_cliente.get() in clientes):
                 messagebox.showerror("Valores inválidos", "Favor de ingresar valores adecuados.")
+                ventana.focus()
+            if cantidad_art_aux > (current_storage - articles_in_table):
+                messagebox.showerror("Cantidad insuficiente", "No hay suficientes existencias del artículo seleccionado.")
                 ventana.focus()
             else:
                 try:
@@ -1995,11 +2023,15 @@ def ventanaVentas(app: App):
                         app.dbv.guardarVenta(auxVenta)
                         ventana2.focus()
 
-                        for valor in valoresGuardadoTabla:
-                            artId = valor[3]
-                            artCant = valor[2]
+                        for valor in valoresTabla:
+                            valor2 = valoresTabla[valor]
+                            print(valor2)
+                            artId = int(valor2[3])
+                            artCant = int(valor2[2])
                             #artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                            artCantActual2 = int(app.dba.getCantidadArticulo2(artId,)[0])
                             #app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                            app.dba.actualizarCantArticulo2(artId, artCantActual2-artCant)
 
                             print(valor)
                             app.dbv.guardarDetalleVenta(valor)
@@ -2094,16 +2126,20 @@ def ventanaVentas(app: App):
                     for valor in valoresAgregados:
                         artId = valor[3]
                         artCant = valor[2]
-                    #    artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                    #    app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
-                        app.dbcom.guardarDetalleCompra(valor)
+                        #artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        #app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                        artCantActual2 = int(app.dba.getCantidadArticulo2(artId,)[0])
+                        app.dba.actualizarCantArticulo2(artId, artCantActual2-artCant)
 
                     for valor in valoresQuitados:
                         artId = valor[3]
                         artCant = valor[2]
-                    #   artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                    #   app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
-                        app.dbcom.eliminarDetalleCompra(valor[0])
+                        #artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        #app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                        artCantActual2 = int(app.dba.getCantidadArticulo2(artId,)[0])
+                        app.dba.actualizarCantArticulo2(artId, artCantActual2+artCant)
+                        
+                        app.dbcom.guardarDetalleCompra(valor)
 
                     messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la venta con el folio {auxVen.get_folio()}.")
 
@@ -2189,13 +2225,15 @@ def ventanaVentas(app: App):
                 if app.dbv.eliminarVenta(auxVen.get_folio()):
                     messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente la venta con folio {auxVen.get_folio()}.")
                     
-                    #for valor in valoresTabla:
-                    #    valor2 = valoresTabla[valor]
-                    #    print(valor2)
-                    #    artId = int(valor2[3])
-                    #    artCant = int(valor2[2])
-                    #    artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                    #    app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                    for valor in valoresTabla:
+                        valor2 = valoresTabla[valor]
+                        print(valor2)
+                        artId = int(valor2[3])
+                        artCant = int(valor2[2])
+                        #artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                        artCantActual2 = int(app.dba.getCantidadArticulo2(artId,)[0])
+                        #app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                        app.dba.actualizarCantArticulo2(artId, artCantActual2+artCant)
                     
                     ventana.focus()
 

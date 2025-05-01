@@ -115,7 +115,7 @@ class dbarticulos:
             print(e)
             return False
         
-    def actualizarCantArticulo2(self, proovedor_id: int, articulo_id: int, nuevaCantidad: int):
+    def actualizarCantArticulo2(self, articulo_id: int, nuevaCantidad: int):
         try:
             self.con = con.conexion()
             self.conn = self.con.open()
@@ -138,8 +138,23 @@ class dbarticulos:
             self.sql = "SELECT existencia FROM det_articulo WHERE articulo_id = %s AND proveedor_id = %s;"
             valores = (articulo_id, proovedor_id)
             self.cursor1.execute(self.sql, valores)
-            rows = self.cursor1.fetchone()
-            return rows
+            row = self.cursor1.fetchone()
+            return row
+    
+        except Exception as e:
+            print(e)
+            return False
+        
+    def getCantidadArticulo2(self, articulo_id: int):
+        try:
+            self.con = con.conexion()
+            self.conn = self.con.open()
+            self.cursor1 = self.conn.cursor()
+            self.sql = "SELECT existencia FROM articulos WHERE articulo_id = %s;"
+            valores = (articulo_id, )
+            self.cursor1.execute(self.sql, valores)
+            row = self.cursor1.fetchone()
+            return row
     
         except Exception as e:
             print(e)
