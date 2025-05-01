@@ -2019,7 +2019,7 @@ def ventanaVentas(app: App):
                             ventana2.focus()
 
                 def buttonComprar():
-                    try:
+                    #try:
                         app.dbv.guardarVenta(auxVenta)
                         ventana2.focus()
 
@@ -2031,44 +2031,46 @@ def ventanaVentas(app: App):
                             #artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
                             artCantActual2 = int(app.dba.getCantidadArticulo2(artId,)[0])
                             #app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                            print(artId)
+                            print(artCant)
                             app.dba.actualizarCantArticulo2(artId, artCantActual2-artCant)
 
-                            print(valor)
-                            app.dbv.guardarDetalleVenta(valor)
+                            
+                            app.dbv.guardarDetalleVenta(valor2)
 
                         app.dbc.actualizarPuntos(auxVenta.get_cliente_id(), puntos_a_obtener)
                         messagebox.showinfo("Registro exitoso", f"Se ha registrado correctamente la venta con el folio {auxVenta.get_folio()}. Por esta compra, ha obtenido {puntos_a_obtener}")
                         ventana2.destroy()
                         ventana.focus()
+                        
+                        valoresTabla.clear()
+                        print(valoresTabla)
+                        valoresAgregados.clear()
+                        valoresQuitados.clear()
+                        tabla.delete(*tabla.get_children())
+                        entry_folio_buscar.delete(0, END)
+                        entry_folio.config(state="normal")
+                        entry_folio.delete(0, END)
+                        entry_folio.config(state="disabled")
+                        entry_cantidad.delete(0, END)
+                        entry_fecha.delete(0, END)
+                        combo_articulo.delete(0, END)
+                        combo_cliente.delete(0, END)
+
+                        btn_nuevo.config(state="normal")
+                        btn_cancelar.config(state="disabled")
+                        btn_editar.config(state="disabled")
+                        btn_remover.config(state="disabled")
+                        btn_guardar.config(state="disabled")
+                        btn_agregar.config(state="disabled")
+                        btn_quitar.config(state="disabled")
+                        
                         return
 
 
-                    except Exception as e:
-                        messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
-                        print(e)
-
-
-                valoresTabla.clear()
-                print(valoresTabla)
-                valoresAgregados.clear()
-                valoresQuitados.clear()
-                tabla.delete(*tabla.get_children())
-                entry_folio_buscar.delete(0, END)
-                entry_folio.config(state="normal")
-                entry_folio.delete(0, END)
-                entry_folio.config(state="disabled")
-                entry_cantidad.delete(0, END)
-                entry_fecha.delete(0, END)
-                combo_articulo.delete(0, END)
-                combo_cliente.delete(0, END)
-
-                btn_nuevo.config(state="normal")
-                btn_cancelar.config(state="disabled")
-                btn_editar.config(state="disabled")
-                btn_remover.config(state="disabled")
-                btn_guardar.config(state="disabled")
-                btn_agregar.config(state="disabled")
-                btn_quitar.config(state="disabled")
+                    #except Exception as e:
+                    #    messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
+                    #    print(e)
 
         def buttonNuevo_clicked():
             valoresTabla.clear()
@@ -2144,7 +2146,6 @@ def ventanaVentas(app: App):
                     messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la venta con el folio {auxVen.get_folio()}.")
 
                     valoresTabla.clear()
-                    print(valoresTabla)
                     valoresAgregados.clear()
                     valoresQuitados.clear()
 
@@ -2177,7 +2178,6 @@ def ventanaVentas(app: App):
         def buttonCancelar_clicked():
 
             valoresTabla.clear()
-            print(valoresTabla)
             valoresAgregados.clear()
             valoresQuitados.clear()
 

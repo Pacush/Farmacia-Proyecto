@@ -154,6 +154,7 @@ class dbarticulos:
             valores = (articulo_id, )
             self.cursor1.execute(self.sql, valores)
             row = self.cursor1.fetchone()
+            self.conn.close()
             return row
     
         except Exception as e:
