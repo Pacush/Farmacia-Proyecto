@@ -1431,10 +1431,10 @@ def ventanaSeleccionarProveedor(app: App):
                 ventana.focus()
 
         def buttonGuardar_clicked():
-            ven_ = ven.Venta()
-            ven_.set_folio(int(entry_folio.get()))
-            ven_.set_fecha(entry_fecha.get())
-            ven_.set_proveedor_id(proveedor[0])
+            com_ = com.Compra()
+            com_.set_folio(int(entry_folio.get()))
+            com_.set_fecha(entry_fecha.get())
+            com_.set_proveedor_id(proveedor[0])
             
             elementosTabla = tabla.get_children()
             valoresGuardadoTabla = []
@@ -1863,27 +1863,23 @@ def ventanaVentas(app: App):
 
         def buttonBuscar_clicked():
             try:
-                com_ = com.Compra()
-                com_.set_folio(entry_folio_buscar.get())
-                auxCom = app.dbcom.buscarCompra(com_, [app.userLogged.getID(), app.userLogged.getPerfil()])
-                if auxCom:
+                ven_ = ven.Venta()
+                ven_.set_folio(entry_folio_buscar.get())
+                auxVen = app.dbv.buscarVenta(ven_, [app.userLogged.getID(), app.userLogged.getPerfil()])
+                if auxVen:
                     valoresTabla.clear()
-                    proveedoraux1 = pro.Proveedor()
-                    proveedoraux1.set_proveedor_id(auxCom.get_proveedor_id())
-                    proveedoraux2 = app.dbp.buscarProveedor(proveedoraux1)
+                    clientaux = cli.Cliente()
+                    clientaux.setID(auxVen.get_cliente_id())
+                    clienteaux2 = app.dbc.buscarCliente(clientaux, [app.userLogged.getID(), app.userLogged.getPerfil()])
                     entry_folio.config(state="normal")
                     entry_folio.delete(0, END)
-                    entry_folio.insert(0, auxCom.get_folio())
+                    entry_folio.insert(0, auxVen.get_folio())
                     entry_folio.config(state="disabled")
-                    combo_proveedor.delete(0, END)
-                    combo_proveedor.config(state="normal")
-                    combo_proveedor.delete(0, END)
-                    combo_proveedor.insert(0, proveedoraux2.get_nombre())
-                    combo_proveedor.config(state="disabled")
+                    combo_cliente.delete(0, END)
+                    combo_cliente.insert(0, clienteaux2.getNombre())
                     entry_fecha.delete(0, END)
-                    entry_fecha.insert(0, auxCom.get_fecha())
+                    entry_fecha.insert(0, auxVen.get_fecha())
 
-                    
                     btn_nuevo.config(state="disabled")
                     btn_agregar.config(state="normal")
                     btn_quitar.config(state="normal")
@@ -1891,18 +1887,18 @@ def ventanaVentas(app: App):
                     btn_remover.config(state="normal")
                     btn_cancelar.config(state="normal")
 
-                    detalles_compra = app.dbcom.detallesCom(auxCom.get_folio())
+                    detalles_venta = app.dbv.detallesVenta(auxVen.get_folio())
 
-                    for detalle in detalles_compra:
+                    for detalle in detalles_venta:
                         tabla.insert('', 'end', values=detalle)
                         indiceTabla = tabla.get_children()[len(tabla.get_children())-1]
                         valores = tabla.item(tabla.get_children()[len(tabla.get_children())-1], "values")
                         valoresTabla[indiceTabla] = valores
-                        
+
                     print(valoresTabla)
 
                 else:
-                    messagebox.showerror("Compra no encontrada", "La copmpra no se encuentra registrada en la DB.")
+                    messagebox.showerror("Venta no encontrada", "La venta no se encuentra registrada en la DB.")
                     ventana.focus()
             except Exception as e:
                 messagebox.showerror("Valor no válido", "Favor de ingresar un ID válido.")
@@ -1914,16 +1910,25 @@ def ventanaVentas(app: App):
             ven_.set_folio(int(entry_folio.get()))
             ven_.set_fecha(entry_fecha.get())
             ven_.set_cliente_id(int(clientes_ids[clientes.index(combo_cliente.get())]))
-            
+
             elementosTabla = tabla.get_children()
             valoresGuardadoTabla = []
+            idsArticulos = []
+            
             for elemento in elementosTabla:
                 valor = tabla.item(elemento, "values")
                 valorInt = []
+                i = 0
                 for columna in valor:
+                    i += 1
                     columnaInt = int(columna)
                     valorInt.append(columnaInt)
+                    if i == 4:
+                        idsArticulos.append(columnaInt)
                 valoresGuardadoTabla.append(valorInt)
+                
+            #for valorAux3 in valoresGuardadoTabla:
+                
 
             if entry_folio.get() == "" or entry_fecha.get() == "" or combo_cliente.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
@@ -1932,40 +1937,41 @@ def ventanaVentas(app: App):
             elif len(elementosTabla) == 0:
                 messagebox.showerror("Compra sin detalles", "Favor de ingresar detalles de la compra.")
                 ventana.focus()
-            
+                
+                
+
             else:
                 auxVenta = ven.Venta()
                 auxVenta.set_folio(int(entry_folio.get()))
                 auxVenta.set_fecha(entry_fecha.get())
                 auxVenta.set_cliente_id(int(clientes_ids[clientes.index(combo_cliente.get())]))
-                
+
                 subtotal = 0
-                
+
                 for valor in valoresGuardadoTabla:
                     precio_venta_art = (app.dba.getPrecioVenta(valor[3])[0][0]) * valor[2]
                     subtotal += precio_venta_art
-                
-                
+
                 ventana2 = tk.Toplevel()
                 ventana2.config(width=300, height=300, bg="black")
                 ventana2.title("Venta - Confirmación")
-                
+
                 iva = subtotal * .16
                 total_a_pagar = subtotal + iva
                 puntos_cliente = app.dbc.getPuntos(auxVenta.get_cliente_id())[0][0]
                 puntos_a_obtener = int(total_a_pagar/10)
-                
+
                 text_subtotal = "Subtotal: " + str(subtotal)
                 text_iva = "IVA: " + str(iva)
                 text_total = "Total: " + str(total_a_pagar)
-                
+
                 label_subtotal = tk.Label(ventana2, text=text_subtotal, bg="black", fg="white")
                 label_subtotal.place(x=30, y=10)
                 label_iva = tk.Label(ventana2, text=text_iva, bg="black", fg="white")
                 label_iva.place(x=30, y=40)
                 label_total_a_pagar = tk.Label(ventana2, text=text_total, bg="black", fg="white")
                 label_total_a_pagar.place(x=30, y=70)
-                
+
                 btn_comprar = tk.Button(ventana2, text="Comprar", command=lambda: buttonComprar(), width=10)
                 btn_comprar.place(x=30, y=100)
 
@@ -1978,33 +1984,33 @@ def ventanaVentas(app: App):
                             text_total = "Total: " + str(total_a_pagar)
                             label_total_a_pagar.config(text=text_total, fg="orange")
                             ventana2.focus()
-                
+
                 def buttonComprar():
                     try:
                         app.dbv.guardarVenta(auxVenta)
                         ventana2.focus()
-                        
+
                         for valor in valoresGuardadoTabla:
                             artId = valor[3]
                             artCant = valor[2]
                             #artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
                             #app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
-                            
+
                             print(valor)
                             app.dbv.guardarDetalleVenta(valor)
-                            
+
                         app.dbc.actualizarPuntos(auxVenta.get_cliente_id(), puntos_a_obtener)
                         messagebox.showinfo("Registro exitoso", f"Se ha registrado correctamente la venta con el folio {auxVenta.get_folio()}. Por esta compra, ha obtenido {puntos_a_obtener}")
                         ventana2.destroy()
                         ventana.focus()
                         return
-                        
+
 
                     except Exception as e:
                         messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
                         print(e)
-                
-                
+
+
                 valoresTabla.clear()
                 print(valoresTabla)
                 valoresAgregados.clear()
@@ -2018,7 +2024,7 @@ def ventanaVentas(app: App):
                 entry_fecha.delete(0, END)
                 combo_articulo.delete(0, END)
                 combo_cliente.delete(0, END)
-                
+
                 btn_nuevo.config(state="normal")
                 btn_cancelar.config(state="disabled")
                 btn_editar.config(state="disabled")
@@ -2026,75 +2032,19 @@ def ventanaVentas(app: App):
                 btn_guardar.config(state="disabled")
                 btn_agregar.config(state="disabled")
                 btn_quitar.config(state="disabled")
-                    
-            def ventanaVentaFinal():
-                ventana = tk.Toplevel()
-                ventana.config(width=300, height=300, bg="black")
-                ventana.title("Venta - Confirmación")
-                
-                iva = subtotal * .16
-                total_a_pagar = subtotal + iva
-                puntos_cliente = app.dbc.getPuntos(auxVenta.get_cliente_id())[0][0]
-                puntos_a_obtener = int(total_a_pagar/10)
-                
-                text_subtotal = "Subtotal: "+ subtotal
-                text_iva = "IVA: " + iva
-                text_total = "Total: " + total_a_pagar
-                
-                label_subtotal = tk.Label(ventana, text=text_subtotal, bg="black", fg="white")
-                label_subtotal.place(x=30, y=10)
-                label_iva = tk.Label(ventana, text=text_iva, bg="black", fg="white")
-                label_iva.place(x=30, y=40)
-                label_total_a_pagar = tk.Label(ventana, text=text_total, bg="black", fg="white")
-                label_total_a_pagar.place(x=30, y=70)
-                
-                btn_comprar = tk.Button(ventana, text="Comprar", command=lambda: buttonComprar(), width=10)
-                btn_comprar.place(x=30, y=100)
 
-                if puntos_cliente > 0:
-                        confirmation = messagebox.askyesno("¿Desea usar puntos?", f"¿Desea usar los {puntos_cliente} con los que cuenta el cliente para pagar?")
-                        if confirmation:
-                            total_a_pagar -= puntos_cliente
-                            app.dbc.actualizarPuntos(auxVenta.get_cliente_id(), 0)
-                            messagebox.showinfo("¡Puntos usados!", f"Su nueva cantidad a pagar serán ${total_a_pagar}.")
-                            text_total = "Total: " + total_a_pagar
-                            label_total_a_pagar.config(text=text_total, fg="orange")
-                
-                def buttonComprar2():
-                    try:
-                        app.dbv.guardarVenta(auxVenta)
-                        ventana.focus()
-                        
-                        for valor in valoresGuardadoTabla:
-                            artId = valor[3]
-                            artCant = valor[2]
-                            #artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                            #app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
-                            
-                            print(valor)
-                            app.dbv.guardarDetalleVenta(valor)
-                            
-                        app.dbc.actualizarPuntos(auxVenta.get_cliente_id(), puntos_a_obtener)
-                        messagebox.showinfo("Registro exitoso", f"Se ha registrado correctamente la venta con el folio {auxVenta.get_folio()}. Por esta compra, ha obtenido {puntos_a_obtener}")
-
-                    except Exception as e:
-                        messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
-                        print(e)
-        
-        
         def buttonNuevo_clicked():
-
             valoresTabla.clear()
             print(valoresTabla)
             valoresAgregados.clear()
             valoresQuitados.clear()
-            
+
             maxFolio = app.dbv.maxSQL("folio", "ventas")[0]
             if not maxFolio:
                 newFolio = 1
             else:
                 newFolio = maxFolio + 1
-            
+
             entry_folio_buscar.delete(0, END)
             entry_folio.config(state="normal")
             entry_folio.delete(0, END)
@@ -2111,48 +2061,47 @@ def ventanaVentas(app: App):
             btn_cancelar.config(state="normal")
             btn_agregar.config(state="normal")
             btn_quitar.config(state="normal")
-            
+
         def buttonEditar_clicked():
-            com_ = com.Compra()
-            com_.set_folio(int(entry_folio.get()))
+            ven_ = ven.Venta()
+            ven_.set_folio(int(entry_folio.get()))
 
             #if not app.dbr.buscarReparacionMatricula(rep_, [app.userLogged.getID(), app.userLogged.getPerfil()]):
             elementosTabla = tabla.get_children()
 
-            
-            if entry_fecha.get() == "" or entry_cantidad.get() == "" or combo_proveedor.get() == "":
+            if entry_fecha.get() == "" or combo_cliente.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
                 ventana.focus()
 
             elif len(elementosTabla) == 0:
-                messagebox.showerror("Compra sin detalles", "Favor de ingresar detalles de la compra.")
+                messagebox.showerror("Compra sin detalles", "Favor de ingresar detalles de la venta.")
                 ventana.focus()
-            
+
             else:
-                auxCompra = com.Compra()
-                auxCompra.set_folio(int(entry_folio.get()))
-                auxCompra.set_fecha(entry_fecha.get())
-                auxCompra.set_proveedor_id(int(proveedores_ids[proveedores.index(combo_proveedor.get())]))
+                auxVen = ven.Venta()
+                auxVen.set_folio(int(entry_folio.get()))
+                auxVen.set_fecha(entry_fecha.get())
+                auxVen.set_cliente_id(int(clientes_ids[clientes.index(combo_cliente.get())]))
                 try:
-                    app.dbcom.editarCompra(auxCompra)
+                    app.dbv.editarVenta(auxVen)
                     ventana.focus()
 
                     for valor in valoresAgregados:
                         artId = valor[3]
                         artCant = valor[2]
-                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
+                    #    artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                    #    app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual+artCant)
                         app.dbcom.guardarDetalleCompra(valor)
 
                     for valor in valoresQuitados:
                         artId = valor[3]
                         artCant = valor[2]
-                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                    #   artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                    #   app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
                         app.dbcom.eliminarDetalleCompra(valor[0])
 
-                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la compra con el folio {auxCompra.get_folio()}.")
-                    
+                    messagebox.showinfo("Registro exitoso", f"Se ha guardado correctamente la venta con el folio {auxVen.get_folio()}.")
+
                     valoresTabla.clear()
                     print(valoresTabla)
                     valoresAgregados.clear()
@@ -2166,10 +2115,8 @@ def ventanaVentas(app: App):
                     entry_folio.config(state="disabled")
                     entry_cantidad.delete(0, END)
                     entry_fecha.delete(0, END)
-                    combo_proveedor.config(state="normal")
-                    combo_proveedor.delete(0, END)
-                    combo_proveedor.config(state="disabled")
                     combo_articulo.delete(0, END)
+                    combo_cliente.delete(0, END)
 
                     btn_nuevo.config(state="normal")
                     btn_cancelar.config(state="disabled")
@@ -2178,7 +2125,7 @@ def ventanaVentas(app: App):
                     btn_guardar.config(state="disabled")
                     btn_agregar.config(state="disabled")
                     btn_quitar.config(state="disabled")
-                    
+
                 except Exception as e:
                     messagebox.showerror("Error", "Hubo un error al intentar ingresar el registro. Revisa tus datos.")
                     print(e)
@@ -2219,7 +2166,7 @@ def ventanaVentas(app: App):
                 valores = tabla.item(elemento, "values")
                 idsList.append(int(valores[0]))
             return idsList
-        
+
         def getArticulosIdsFromTabla():
             elementos = tabla.get_children()
             idsList = []
@@ -2229,21 +2176,21 @@ def ventanaVentas(app: App):
             return idsList
 
         def ventanaEliminarCompra():
-            auxCom = com.Compra()
-            auxCom.set_folio(int(entry_folio.get()))
+            auxVen = ven.Venta()
+            auxVen.set_folio(int(entry_folio.get()))
             
-            confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar la compra con folio {auxCom.get_folio()} y todos sus detalles?")
+            confirmation = messagebox.askyesno("¿Desea continuar?", f"¿Desea eliminar la venta con folio {auxVen.get_folio()} y todos sus detalles?")
             if confirmation:
-                if app.dbcom.eliminarCompra(auxCom.get_folio()):
-                    messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente la compra con folio {auxCom.get_folio()}.")
+                if app.dbv.eliminarVenta(auxVen.get_folio()):
+                    messagebox.showinfo("Eliminación exitosa", f"Se ha eliminado satisfactoriamente la venta con folio {auxVen.get_folio()}.")
                     
-                    for valor in valoresTabla:
-                        valor2 = valoresTabla[valor]
-                        print(valor2)
-                        artId = int(valor2[3])
-                        artCant = int(valor2[2])
-                        artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
-                        app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
+                    #for valor in valoresTabla:
+                    #    valor2 = valoresTabla[valor]
+                    #    print(valor2)
+                    #    artId = int(valor2[3])
+                    #    artCant = int(valor2[2])
+                    #    artCantActual = int(app.dba.getCantidadArticulo(artId, proveedor[0])[0])
+                    #    app.dba.actualizarCantArticulo(proveedor[0], artId, artCantActual-artCant)
                     
                     ventana.focus()
 
@@ -2258,10 +2205,8 @@ def ventanaVentas(app: App):
                     entry_folio.config(state="disabled")
                     entry_cantidad.delete(0, END)
                     entry_fecha.delete(0, END)
-                    combo_proveedor.config(state="normal")
-                    combo_proveedor.delete(0, END)
-                    combo_proveedor.config(state="disabled")
                     combo_articulo.delete(0, END)
+                    combo_cliente.delete(0, END)
 
                     btn_nuevo.config(state="normal")
                     btn_cancelar.config(state="disabled")
@@ -2272,7 +2217,7 @@ def ventanaVentas(app: App):
                     btn_quitar.config(state="disabled")
 
                 else:
-                    messagebox.showerror("Eliminación fallida", "No ha sido posible eliminar la compra.")
+                    messagebox.showerror("Eliminación fallida", "No ha sido posible eliminar la venta.")
                     ventana.focus()
             else:
                 ventana.focus()
