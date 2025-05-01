@@ -1446,6 +1446,8 @@ def ventanaSeleccionarProveedor(app: App):
                     valorInt.append(columnaInt)
                 valoresGuardadoTabla.append(valorInt)
 
+            asdasdasd
+            
             if entry_folio.get() == "" or entry_fecha.get() == "" or combo_proveedor.get() == "":
                 messagebox.showerror("Campos faltantes", "Faltan campos por llenar para guardar el registro.")
                 ventana.focus()
@@ -1453,6 +1455,9 @@ def ventanaSeleccionarProveedor(app: App):
             elif len(elementosTabla) == 0:
                 messagebox.showerror("Compra sin detalles", "Favor de ingresar detalles de la compra.")
                 ventana.focus()
+                
+            elif:
+                
             
             else:
                 auxCompra = com.Compra()

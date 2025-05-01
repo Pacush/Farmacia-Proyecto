@@ -115,6 +115,21 @@ class dbarticulos:
             print(e)
             return False
         
+    def actualizarCantArticulo2(self, proovedor_id: int, articulo_id: int, nuevaCantidad: int):
+        try:
+            self.con = con.conexion()
+            self.conn = self.con.open()
+            self.cursor1 = self.conn.cursor()
+            self.sql = "UPDATE articulos SET existencia = %s WHERE articulo_id = %s;"
+            valores = (nuevaCantidad, articulo_id)
+            self.cursor1.execute(self.sql, valores)
+            self.conn.commit()
+            self.con.close()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        
     def getCantidadArticulo(self, articulo_id: int, proovedor_id: int):
         try:
             self.con = con.conexion()

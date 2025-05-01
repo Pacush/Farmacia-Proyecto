@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Apr 30, 2025 at 05:46 AM
+-- Generation Time: May 01, 2025 at 10:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -31,16 +31,18 @@ CREATE TABLE `articulos` (
   `articulo_id` int(10) NOT NULL,
   `descripcion` varchar(50) NOT NULL,
   `precio_unitario` int(10) NOT NULL,
-  `precio_venta` int(10) NOT NULL
+  `precio_venta` int(10) NOT NULL,
+  `existencia` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `articulos`
 --
 
-INSERT INTO `articulos` (`articulo_id`, `descripcion`, `precio_unitario`, `precio_venta`) VALUES
-(1, 'asd', 12, 15),
-(2, 'Fanta', 12, 15);
+INSERT INTO `articulos` (`articulo_id`, `descripcion`, `precio_unitario`, `precio_venta`, `existencia`) VALUES
+(1, 'asd', 12, 15, 0),
+(2, 'Fanta', 12, 15, 0),
+(3, 'Agua', 10, 15, 0);
 
 -- --------------------------------------------------------
 
@@ -62,7 +64,7 @@ CREATE TABLE `clientes` (
 --
 
 INSERT INTO `clientes` (`cliente_id`, `nombre`, `direccion`, `rfc`, `usuario_id`, `puntos`) VALUES
-(1, 'Diego', '1234', '1234', 1, 13);
+(1, 'Diego', '1234', '1234', 1, 10);
 
 -- --------------------------------------------------------
 
@@ -83,7 +85,9 @@ CREATE TABLE `compras` (
 INSERT INTO `compras` (`folio`, `fecha`, `proveedor_id`) VALUES
 (1, 'sad', 2),
 (2, '12.12.12', 1),
-(3, '29.4.2225', 1);
+(3, '29.4.2225', 1),
+(4, '1.1.1', 1),
+(5, '77.77.77', 1);
 
 -- --------------------------------------------------------
 
@@ -106,7 +110,9 @@ INSERT INTO `det_articulo` (`det_id`, `proveedor_id`, `articulo_id`, `existencia
 (1, 1, 1, 160),
 (3, 2, 1, 20),
 (4, 1, 2, 50),
-(6, 2, 2, 100);
+(6, 2, 2, 100),
+(7, 1, 3, 50),
+(8, 2, 3, 20);
 
 -- --------------------------------------------------------
 
@@ -131,7 +137,9 @@ INSERT INTO `det_compra` (`det_id`, `folio`, `cantidad`, `articulo_id`) VALUES
 (4, 2, 10, 1),
 (5, 2, 25, 2),
 (8, 3, 11, 1),
-(9, 3, 7, 2);
+(9, 3, 7, 2),
+(10, 4, 10, 3),
+(11, 5, 20, 3);
 
 -- --------------------------------------------------------
 
@@ -172,16 +180,17 @@ CREATE TABLE `proveedores` (
   `proveedor_id` int(10) NOT NULL,
   `nombre` varchar(20) NOT NULL,
   `empresa` varchar(20) NOT NULL,
-  `telefono` varchar(20) NOT NULL
+  `telefono` varchar(20) NOT NULL,
+  `existencias` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `proveedores`
 --
 
-INSERT INTO `proveedores` (`proveedor_id`, `nombre`, `empresa`, `telefono`) VALUES
-(1, 'Coca', 'Coca', '123454'),
-(2, 'Pepsi', 'Pepsi', '12354');
+INSERT INTO `proveedores` (`proveedor_id`, `nombre`, `empresa`, `telefono`, `existencias`) VALUES
+(1, 'Coca', 'Coca', '123454', 50),
+(2, 'Pepsi', 'Pepsi', '12354', 50);
 
 -- --------------------------------------------------------
 
