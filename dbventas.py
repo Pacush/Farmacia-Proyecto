@@ -89,7 +89,7 @@ class dbventas:
             self.con = con.conexion()
             self.conn = self.con.open()
             self.cursor1 = self.conn.cursor()
-            self.sql = "SELECT * FROM det_venta WHERE folio = %s"
+            self.sql = "SELECT det_id, folio, cantidad, articulo_id FROM det_venta WHERE folio = %s"
             valores = (folio,)
             self.cursor1.execute(self.sql, valores)
             rows = self.cursor1.fetchall()

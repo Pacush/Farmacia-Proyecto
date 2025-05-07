@@ -1895,6 +1895,30 @@ def ventanaVentas(app: App):
             tabla.delete(seleccion[0])
 
         def buttonBuscar_clicked():
+            
+            valoresTabla.clear()
+            valoresAgregados.clear()
+            valoresQuitados.clear()
+
+            tabla.delete(*tabla.get_children())
+
+            #entry_folio_buscar.delete(0, END)
+            entry_folio.config(state="normal")
+            entry_folio.delete(0, END)
+            entry_folio.config(state="disabled")
+            entry_cantidad.delete(0, END)
+            entry_fecha.delete(0, END)
+            combo_articulo.delete(0, END)
+            combo_cliente.delete(0, END)
+
+            btn_nuevo.config(state="normal")
+            btn_cancelar.config(state="disabled")
+            btn_editar.config(state="disabled")
+            btn_remover.config(state="disabled")
+            btn_guardar.config(state="disabled")
+            btn_agregar.config(state="disabled")
+            btn_quitar.config(state="disabled")
+            
             try:
                 ven_ = ven.Venta()
                 ven_.set_folio(entry_folio_buscar.get())
