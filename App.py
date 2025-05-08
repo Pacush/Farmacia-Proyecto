@@ -1895,7 +1895,7 @@ def ventanaVentas(app: App):
             tabla.delete(seleccion[0])
 
         def buttonBuscar_clicked():
-            
+
             valoresTabla.clear()
             valoresAgregados.clear()
             valoresQuitados.clear()
@@ -1918,7 +1918,7 @@ def ventanaVentas(app: App):
             btn_guardar.config(state="disabled")
             btn_agregar.config(state="disabled")
             btn_quitar.config(state="disabled")
-            
+
             try:
                 ven_ = ven.Venta()
                 ven_.set_folio(entry_folio_buscar.get())
